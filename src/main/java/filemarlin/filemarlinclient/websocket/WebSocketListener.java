@@ -40,7 +40,12 @@ public class WebSocketListener implements WebSocket.Listener {
 
                 }
                 case "get-clients" -> {
+                    var clientData = payload.get("client-data");
+                    var requestId = clientData.get("requestId").asString();
 
+                    var clients = payload.get("clients");
+                    pendingRequests.get(requestId).complete(clients);
+                    pendingRequests.remove(requestId);
                 }
                 case "error" -> {
 
