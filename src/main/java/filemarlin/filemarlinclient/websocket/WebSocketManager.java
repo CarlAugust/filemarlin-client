@@ -5,15 +5,26 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URI;
 import java.net.http.*;
-import java.util.concurrent.CompletionException;
+
+
+/*
+I definitly need to improve the error handling of this class and like the initilization
+such that it reconnects...
+
+Prompts you if the login does not work
+What if the websocket does not connect ect...
+ */
 
 public class WebSocketManager {
 
-    private HttpClient httpClient;
-    private WebSocket serverSocket;
+    private static WebSocketManager instance;
 
+    private final HttpClient httpClient;
+    private final WebSocket serverSocket;
+    private final WebSocketListener listener;
+    private final WebSocketMessenger messenger;
 
-    public WebSocketManager() throws IOException, InterruptedException {
+    private WebSocketManager() throws IOException, InterruptedException {
 
         var cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         httpClient = HttpClient.newBuilder()
@@ -27,12 +38,27 @@ public class WebSocketManager {
                 .build();
 
         HttpResponse<String> response = httpClient.send(loginRequest, HttpResponse.BodyHandlers.ofString());
-        serverSocket = httpClient.newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8080/ws"), new CustomListener()).join();
+
+        listener = new WebSocketListener();
+        serverSocket = httpClient.newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8080/ws"), listener).join();
+
+        messenger = new WebSocketMessenger(serverSocket, listener);
     }
+
 
     public void close() {
         serverSocket.sendClose(WebSocket.NORMAL_CLOSURE, "");
     }
 
+    // Single global access point
+    public static synchronized WebSocketManager getInstance() throws IOException, InterruptedException {
+        if (instance == null) {
+            instance = new WebSocketManager();
+        }
+        return instance;
+    }
 
+    public WebSocketMessenger getMessenger() {
+        return messenger;
+    }
 }
