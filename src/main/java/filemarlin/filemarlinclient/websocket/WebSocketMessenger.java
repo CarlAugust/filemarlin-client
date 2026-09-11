@@ -1,5 +1,6 @@
 package filemarlin.filemarlinclient.websocket;
 
+import filemarlin.filemarlinclient.websocket.records.GetClientsRequest;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -21,16 +22,15 @@ public class WebSocketMessenger {
         listener = webSocketListener;
     }
 
-    public CompletableFuture<JsonNode> getClients() {
-        var request = new HashMap<>();
-        request.put("type", "get-clients");
-
-        var clientData = new HashMap<>();
-        var key_future = listener.registerRequest();
-        clientData.put("requestId", key_future.getKey());
-        request.put("client-data", clientData);
-
+    private void sendRequest(Object request) {
         socket.sendText(objectMapper.writeValueAsString(request), true);
-        return key_future.getValue();
+    }
+
+    public CompletableFuture<String[]> getClients() {
+
+        var key_future = listener.registerRequest();
+        var request = new GetClientsRequest("get-clients", new GetClientsRequest.ClientData(key_future.getKey()));
+        sendRequest(request);
+        return key_future.getValue().thenApply(obj -> (String[]) obj);
     }
 }

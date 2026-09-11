@@ -37,7 +37,7 @@ public class WebSocketManager {
                 .POST(HttpRequest.BodyPublishers.ofString("username=admin&password=password"))
                 .build();
 
-        HttpResponse<String> response = httpClient.send(loginRequest, HttpResponse.BodyHandlers.ofString());
+        httpClient.send(loginRequest, HttpResponse.BodyHandlers.ofString());
 
         listener = new WebSocketListener();
         serverSocket = httpClient.newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8080/ws"), listener).join();

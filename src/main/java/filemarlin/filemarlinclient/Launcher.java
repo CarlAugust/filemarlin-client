@@ -4,6 +4,7 @@ import filemarlin.filemarlinclient.websocket.WebSocketManager;
 import javafx.application.Application;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class Launcher {
     public static void main(String[] args) {
@@ -11,10 +12,12 @@ public class Launcher {
         // Setup http client and websocket stuff
         WebSocketManager wsManager;
         try {
-            wsManager = new WebSocketManager();
+            wsManager = WebSocketManager.getInstance();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        System.out.println(Arrays.toString(wsManager.getMessenger().getClients().join()));
 
         // Setup WebRTC stuff
 

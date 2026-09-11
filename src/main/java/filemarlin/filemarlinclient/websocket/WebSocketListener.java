@@ -1,5 +1,6 @@
 package filemarlin.filemarlinclient.websocket;
 
+import filemarlin.filemarlinclient.websocket.records.GetClientsResponse;
 import javafx.util.Pair;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -15,17 +16,22 @@ import java.util.concurrent.TimeUnit;
 public class WebSocketListener implements WebSocket.Listener {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ConcurrentHashMap<String, CompletableFuture<JsonNode>> pendingRequests = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CompletableFuture<Object>> pendingRequests = new ConcurrentHashMap<>();
 
-    public Pair<String, CompletableFuture<JsonNode>> registerRequest() {
+    public Pair<String, CompletableFuture<Object>> registerRequest() {
         String id = UUID.randomUUID().toString();
-        CompletableFuture<JsonNode> future = new CompletableFuture<>();
+        CompletableFuture<Object> future = new CompletableFuture<>();
 
         future.orTimeout(5, TimeUnit.SECONDS)
                 .whenComplete((res, ex) -> pendingRequests.remove(id));
 
         pendingRequests.put(id, future);
         return new Pair<>(id, future);
+    }
+
+    public void completeRequest(String requestId, Object result) {
+        pendingRequests.get(requestId).complete(result);
+        pendingRequests.remove(requestId);
     }
 
     @Override
@@ -40,12 +46,8 @@ public class WebSocketListener implements WebSocket.Listener {
 
                 }
                 case "get-clients" -> {
-                    var clientData = payload.get("client-data");
-                    var requestId = clientData.get("requestId").asString();
-
-                    var clients = payload.get("clients");
-                    pendingRequests.get(requestId).complete(clients);
-                    pendingRequests.remove(requestId);
+                    var response = objectMapper.treeToValue(payload, GetClientsResponse.class);
+                    completeRequest(response.clientData().requestId(), response.clients());
                 }
                 case "error" -> {
 
