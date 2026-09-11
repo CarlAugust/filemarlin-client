@@ -1,5 +1,6 @@
 package filemarlin.filemarlinclient.websocket;
 
+import filemarlin.filemarlinclient.websocket.records.ErrorResponse;
 import filemarlin.filemarlinclient.websocket.records.GetClientsResponse;
 import javafx.util.Pair;
 import tools.jackson.databind.JsonNode;
@@ -50,7 +51,14 @@ public class WebSocketListener implements WebSocket.Listener {
                     completeRequest(response.clientData().requestId(), response.clients());
                 }
                 case "error" -> {
+                    var response = objectMapper.treeToValue(payload, ErrorResponse.class);
+                    System.out.println(response.message());
 
+                    if (response.ClientData().has("requestId")) {
+                        var requestId = response.ClientData().get("requestId").asString();
+                        pendingRequests.get(requestId).completeExceptionally(new Exception(response.message()));
+                        pendingRequests.remove(requestId);
+                    }
                 }
             }
 
