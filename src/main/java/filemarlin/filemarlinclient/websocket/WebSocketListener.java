@@ -35,6 +35,11 @@ public class WebSocketListener implements WebSocket.Listener {
         pendingRequests.remove(requestId);
     }
 
+    public void failRequest(String requestId, Exception e) {
+        pendingRequests.get(requestId).completeExceptionally(e);
+        pendingRequests.remove(requestId);
+    }
+
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
 
@@ -56,8 +61,7 @@ public class WebSocketListener implements WebSocket.Listener {
 
                     if (response.ClientData().has("requestId")) {
                         var requestId = response.ClientData().get("requestId").asString();
-                        pendingRequests.get(requestId).completeExceptionally(new Exception(response.message()));
-                        pendingRequests.remove(requestId);
+                        failRequest(requestId, new Exception(response.message()));
                     }
                 }
             }
@@ -65,7 +69,6 @@ public class WebSocketListener implements WebSocket.Listener {
         } catch (Exception e) {
             System.out.println("Something went wrong\n");
         }
-
 
         return WebSocket.Listener.super.onText(webSocket, data, last);
     }
