@@ -51,11 +51,18 @@ public class WebSocketManager {
     }
 
     // Single global access point
-    public static synchronized WebSocketManager getInstance() throws IOException, InterruptedException {
-        if (instance == null) {
-            instance = new WebSocketManager();
+    public static synchronized WebSocketManager getInstance() {
+        try {
+            if (instance == null) {
+                instance = new WebSocketManager();
+            }
+            return instance;
+        } catch (Exception e) {
+            // TODO: If there is an error here just stop...
+            System.out.println("There was an error connecting to the server stopping client");
+            System.exit(1);
+            return null;
         }
-        return instance;
     }
 
     public WebSocketMessenger getMessenger() {

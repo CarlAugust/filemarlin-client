@@ -1,13 +1,9 @@
 package filemarlin.filemarlinclient.websocket;
 
 import filemarlin.filemarlinclient.websocket.records.GetClientsRequest;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.Serializable;
 import java.net.http.WebSocket;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class WebSocketMessenger {
@@ -33,4 +29,5 @@ public class WebSocketMessenger {
         sendRequest(request);
         return key_future.getValue().thenApply(obj -> (String[]) obj);
     }
+
 }

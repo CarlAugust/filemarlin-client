@@ -1,5 +1,6 @@
 package filemarlin.filemarlinclient;
 
+import filemarlin.filemarlinclient.websocket.Signaller;
 import filemarlin.filemarlinclient.websocket.WebSocketManager;
 import javafx.application.Application;
 
@@ -10,20 +11,16 @@ public class Launcher {
     public static void main(String[] args) {
 
         // Setup http client and websocket stuff
-        WebSocketManager wsManager;
-        try {
-            wsManager = WebSocketManager.getInstance();
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        System.out.println(Arrays.toString(wsManager.getMessenger().getClients().join()));
+        var wsManager = WebSocketManager.getInstance();
+        System.out.println(Arrays.toString(Signaller.messenger.getClients().join()));
 
         // Setup WebRTC stuff
 
 
         Application.launch(HelloApplication.class, args);
 
+
+        // Cleanup for graceful disconnect
         wsManager.close();
 
     }
