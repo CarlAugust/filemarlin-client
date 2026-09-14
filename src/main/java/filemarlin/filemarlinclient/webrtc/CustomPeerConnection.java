@@ -6,16 +6,16 @@ import tools.jackson.databind.ObjectMapper;
 
 public class CustomPeerConnection {
 
-    private WebRTCManager manager;
+    private WebRTCClient manager;
     private RTCPeerConnection peerConnection;
     private RTCDataChannel dataChannel;
 
-    private RTCConfiguration config;
-    private PeerConnectionFactory factory;
-    private RTCOfferOptions options;
+    private final RTCConfiguration config;
+    private final PeerConnectionFactory factory;
+    private final RTCOfferOptions options;
 
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public CustomPeerConnection(
             String id,
@@ -28,7 +28,6 @@ public class CustomPeerConnection {
         this.options = options;
 
         createPeerConnection(id);
-        createOffer(id);
     }
 
     public void createPeerConnection(String id) {
@@ -62,4 +61,19 @@ public class CustomPeerConnection {
             }
         });
     }
+
+    public void recieveMessage(String signalType, String signalPayload) {
+        System.out.println(signalType);
+        System.out.println(signalPayload);
+    }
+
+    public void close() {
+        dataChannel.unregisterObserver();
+        dataChannel.close();
+        dataChannel.dispose();
+
+        peerConnection.close();
+    }
+
+
 }
