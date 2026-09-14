@@ -55,4 +55,10 @@ public class WebSocketSignaller {
         sendMessage(request);
     }
 
+    public void receiveSignal(JsonNode payload) {
+        var message = objectMapper.treeToValue(payload, SignalMessage.class);
+        var type = message.clientData().signalType();
+        
+    }
+
 }

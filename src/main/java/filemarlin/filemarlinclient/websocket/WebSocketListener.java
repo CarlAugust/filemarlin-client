@@ -20,9 +20,7 @@ public class WebSocketListener implements WebSocket.Listener {
             var type = payload.get("type").asString();
 
             switch (type) {
-                case "webrtc-signal" -> {
-
-                }
+                case "webrtc-signal" -> Signal().receiveSignal(payload);
                 case "get-clients" -> Signal().receiveClients(payload);
                 case "error" -> Signal().receiveError(payload);
             }

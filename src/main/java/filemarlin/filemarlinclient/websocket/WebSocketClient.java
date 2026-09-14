@@ -15,16 +15,16 @@ Prompts you if the login does not work
 What if the websocket does not connect ect...
  */
 
-public class WebSocketManager {
+public class WebSocketClient {
 
-    private static WebSocketManager instance;
+    private static WebSocketClient instance;
 
     private final HttpClient httpClient;
     private final WebSocket serverSocket;
     private final WebSocketListener listener;
     private final WebSocketSignaller messenger;
 
-    private WebSocketManager() throws IOException, InterruptedException {
+    private WebSocketClient() throws IOException, InterruptedException {
 
         var cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         httpClient = HttpClient.newBuilder()
@@ -50,10 +50,10 @@ public class WebSocketManager {
     }
 
     // Single global access point
-    public static synchronized WebSocketManager getInstance() {
+    public static synchronized WebSocketClient getInstance() {
         try {
             if (instance == null) {
-                instance = new WebSocketManager();
+                instance = new WebSocketClient();
             }
             return instance;
         } catch (Exception e) {

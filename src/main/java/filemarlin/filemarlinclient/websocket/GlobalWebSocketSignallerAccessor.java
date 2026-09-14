@@ -8,6 +8,6 @@ Long ass name i know whatever it explainatory i guess?
  */
 public class GlobalWebSocketSignallerAccessor {
     public static WebSocketSignaller Signal() {
-        return WebSocketManager.getInstance().getMessenger();
+        return WebSocketClient.getInstance().getMessenger();
     }
 }
