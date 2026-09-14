@@ -22,7 +22,7 @@ public class WebSocketManager {
     private final HttpClient httpClient;
     private final WebSocket serverSocket;
     private final WebSocketListener listener;
-    private final WebSocketMessenger messenger;
+    private final WebSocketSignaller messenger;
 
     private WebSocketManager() throws IOException, InterruptedException {
 
@@ -41,8 +41,7 @@ public class WebSocketManager {
 
         listener = new WebSocketListener();
         serverSocket = httpClient.newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8080/ws"), listener).join();
-
-        messenger = new WebSocketMessenger(serverSocket, listener);
+        messenger = new WebSocketSignaller(serverSocket);
     }
 
 
@@ -65,7 +64,7 @@ public class WebSocketManager {
         }
     }
 
-    public WebSocketMessenger getMessenger() {
+    public WebSocketSignaller getMessenger() {
         return messenger;
     }
 }
