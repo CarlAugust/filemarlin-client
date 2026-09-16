@@ -1,5 +1,6 @@
 package filemarlin.filemarlinclient.websocket;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.net.http.WebSocket;
@@ -25,8 +26,10 @@ public class WebSocketListener implements WebSocket.Listener {
                 case "error" -> Signal().receiveError(payload);
             }
 
+        }  catch (JacksonException e) {
+            System.err.println("There was a problem parsing a response: " + e);
         } catch (Exception e) {
-            System.out.println("Something went wrong\n");
+            System.err.println("Something went wrong\n");
         }
 
         return WebSocket.Listener.super.onText(webSocket, data, last);

@@ -1,22 +1,22 @@
 package filemarlin.filemarlinclient.websocket;
 
-import filemarlin.filemarlinclient.websocket.records.ErrorResponse;
-import filemarlin.filemarlinclient.websocket.records.GetClientsRequest;
-import filemarlin.filemarlinclient.websocket.records.GetClientsResponse;
-import filemarlin.filemarlinclient.websocket.records.SignalMessage;
+import filemarlin.filemarlinclient.websocket.records.*;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.net.http.WebSocket;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class WebSocketSignaller {
 
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RequestTracker requestTracker = new RequestTracker();
-
     private final WebSocket socket;
+
+    private Consumer<SignalMessageResponse> onSignalEvent;
 
     public WebSocketSignaller(WebSocket webSocket) {
         socket = webSocket;
@@ -33,12 +33,12 @@ public class WebSocketSignaller {
         return key_future.getValue().thenApply(obj -> (String[]) obj);
     }
 
-    public void receiveClients(JsonNode payload) {
+    public void receiveClients(JsonNode payload) throws JacksonException {
         var response = objectMapper.treeToValue(payload, GetClientsResponse.class);
         requestTracker.completeRequest(response.clientData().requestId(), response.clients());
     }
 
-    public void receiveError(JsonNode payload) {
+    public void receiveError(JsonNode payload) throws JacksonException {
         var response = objectMapper.treeToValue(payload, ErrorResponse.class);
         System.out.println(response.message());
 
@@ -48,17 +48,24 @@ public class WebSocketSignaller {
         }
     }
 
-    public <T> void sendSignal(String id, String signalType, T signalPayload) {
+    public <T> void sendSignal(String id, String signalType, T signalPayload) throws JacksonException {
         var signalPayloadJson = objectMapper.valueToTree(signalPayload);
-        var clientData = new SignalMessage.ClientData(signalType, signalPayloadJson);
-        var request = new SignalMessage("webrtc-signal", id, clientData);
+        var clientData = new SignalMessageRequest.ClientData(signalType, signalPayloadJson);
+        var request = new SignalMessageRequest("webrtc-signal", id, clientData);
         sendMessage(request);
     }
 
-    public void receiveSignal(JsonNode payload) {
-        var message = objectMapper.treeToValue(payload, SignalMessage.class);
-        var type = message.clientData().signalType();
-        
+    public void receiveSignal(JsonNode payload) throws JacksonException {
+
+        var message = objectMapper.treeToValue(payload, SignalMessageResponse.class);
+
+        if (onSignalEvent != null) {
+            onSignalEvent.accept(message);
+        }
+
     }
 
+    public void setOnSignalEvent(Consumer<SignalMessageResponse> onSignalEvent) {
+        this.onSignalEvent = onSignalEvent;
+    }
 }

@@ -1,9 +1,13 @@
 package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.*;
+import filemarlin.filemarlinclient.websocket.records.SignalMessageRequest;
+import filemarlin.filemarlinclient.websocket.records.SignalMessageResponse;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static filemarlin.filemarlinclient.websocket.GlobalWebSocketSignallerAccessor.Signal;
 
 public class WebRTCClient {
     private final RTCConfiguration config = new RTCConfiguration();
@@ -15,6 +19,15 @@ public class WebRTCClient {
     public WebRTCClient() {
         iceServer.urls.add("stun:stun.l.google.com:19302");
         config.iceServers.add(iceServer);
+
+        Signal().setOnSignalEvent(this::handleSignal);
+    }
+
+    private void handleSignal(SignalMessageResponse message) {
+        System.out.println("A signal was sent!!!");
+
+        var connection = getConnection(message.senderId());
+
     }
 
     public void establishConnection(String id) {

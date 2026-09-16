@@ -4,6 +4,7 @@ module filemarlin.filemarlinclient {
     requires java.net.http;
     requires tools.jackson.databind;
     requires webrtc.java;
+    requires jdk.unsupported;
 
 
     opens filemarlin.filemarlinclient to javafx.fxml;
