@@ -1,7 +1,6 @@
 package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.*;
-import filemarlin.filemarlinclient.websocket.records.SignalMessageRequest;
 import filemarlin.filemarlinclient.websocket.records.SignalMessageResponse;
 
 import java.util.Map;
@@ -13,7 +12,8 @@ public class WebRTCClient {
     private final RTCConfiguration config = new RTCConfiguration();
     private final RTCIceServer iceServer = new RTCIceServer();
     private final PeerConnectionFactory factory = new PeerConnectionFactory();
-    private final RTCOfferOptions options = new RTCOfferOptions();
+    private final RTCOfferOptions offerOptions = new RTCOfferOptions();
+    private final RTCAnswerOptions answerOptions = new RTCAnswerOptions();
     private final Map<String, CustomPeerConnection> peerConnectionsMap = new ConcurrentHashMap<>();
 
     public WebRTCClient() {
@@ -24,14 +24,12 @@ public class WebRTCClient {
     }
 
     private void handleSignal(SignalMessageResponse message) {
-        System.out.println("A signal was sent!!!");
-
         var connection = getConnection(message.senderId());
-
+        connection.recieveSignal(message.senderId(), message.clientData().signalType(), message.clientData().signalPayload());
     }
 
     public void establishConnection(String id) {
-        peerConnectionsMap.put(id, new CustomPeerConnection(id, config, factory, options));
+        peerConnectionsMap.put(id, new CustomPeerConnection(id, config, factory, offerOptions, answerOptions));
     }
 
     public CustomPeerConnection getConnection(String id) {
