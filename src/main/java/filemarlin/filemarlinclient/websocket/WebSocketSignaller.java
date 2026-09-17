@@ -9,7 +9,7 @@ import java.net.http.WebSocket;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public class WebSocketSignaller {
+public class WebSocketSignaller implements Signaller {
 
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -50,9 +50,8 @@ public class WebSocketSignaller {
         }
     }
 
-    public <T> void sendSignal(String id, String signalType, T signalPayload) throws JacksonException {
-        var signalPayloadJson = objectMapper.valueToTree(signalPayload);
-        var clientData = new SignalMessageRequest.ClientData(signalType, signalPayloadJson);
+    public void sendSignal(String id, String signalType, JsonNode signalPayload) {
+        var clientData = new SignalMessageRequest.ClientData(signalType, signalPayload);
         var request = new SignalMessageRequest("webrtc-signal", id, clientData);
         sendMessage(request);
     }

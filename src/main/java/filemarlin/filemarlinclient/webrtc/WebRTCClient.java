@@ -1,7 +1,7 @@
 package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.*;
-import filemarlin.filemarlinclient.websocket.WebSocketSignaller;
+import filemarlin.filemarlinclient.websocket.Signaller;
 import filemarlin.filemarlinclient.websocket.records.SignalMessageResponse;
 
 import java.util.Map;
@@ -15,9 +15,9 @@ public class WebRTCClient {
     private final RTCAnswerOptions answerOptions = new RTCAnswerOptions();
     private final Map<String, CustomPeerConnection> peerConnectionsMap = new ConcurrentHashMap<>();
 
-    private WebSocketSignaller signaller;
+    private Signaller signaller;
 
-    public WebRTCClient(WebSocketSignaller signaller) {
+    public WebRTCClient(Signaller signaller) {
         this.signaller = signaller;
 
         iceServer.urls.add("stun:stun.l.google.com:19302");
@@ -28,7 +28,7 @@ public class WebRTCClient {
 
     private void handleSignal(SignalMessageResponse message) {
         var connection = getConnection(message.senderId());
-        connection.recieveSignal(message.senderId(), message.clientData().signalType(), message.clientData().signalPayload());
+        connection.receiveSignal(message.senderId(), message.clientData().signalType(), message.clientData().signalPayload());
     }
 
     public void establishConnection(String id) {
