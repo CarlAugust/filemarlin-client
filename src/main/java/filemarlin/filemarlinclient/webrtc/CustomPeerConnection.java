@@ -52,22 +52,7 @@ public class CustomPeerConnection {
             @Override
             public void onDataChannel(RTCDataChannel channel) {
                 dataChannel = channel;
-                dataChannel.registerObserver(new RTCDataChannelObserver() {
-                    @Override
-                    public void onBufferedAmountChange(long previousAmount) {
-
-                    }
-
-                    @Override
-                    public void onStateChange() {
-
-                    }
-
-                    @Override
-                    public void onMessage(RTCDataChannelBuffer buffer) {
-
-                    }
-                });
+                dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel));
             }
         });
 
@@ -75,23 +60,8 @@ public class CustomPeerConnection {
 
     public void createOffer(String id) throws NullPointerException {
         dataChannel = peerConnection.createDataChannel("Message", new RTCDataChannelInit());
-        dataChannel.registerObserver(new RTCDataChannelObserver() {
-            @Override
-            public void onBufferedAmountChange(long previousAmount) {
+        dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel));
 
-            }
-
-            @Override
-            public void onStateChange() {
-
-            }
-
-            @Override
-            public void onMessage(RTCDataChannelBuffer buffer) {
-
-            }
-        });
-        
         peerConnection.createOffer(offerOptions, new CreateSessionDescriptionObserver() {
             @Override
             public void onSuccess(RTCSessionDescription description) {
