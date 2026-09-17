@@ -14,12 +14,14 @@ public class WebSocketSignaller {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RequestTracker requestTracker = new RequestTracker();
-    private final WebSocket socket;
+    private WebSocket socket;
 
     private Consumer<SignalMessageResponse> onSignalEvent;
 
-    public WebSocketSignaller(WebSocket webSocket) {
-        socket = webSocket;
+    public WebSocketSignaller() {}
+
+    public void setSocket(WebSocket socket) {
+        this.socket = socket;
     }
 
     private void sendMessage(Object request) {

@@ -22,9 +22,9 @@ public class WebSocketClient {
     private final HttpClient httpClient;
     private final WebSocket serverSocket;
     private final WebSocketListener listener;
-    private final WebSocketSignaller messenger;
+    private final WebSocketSignaller signaller;
 
-    private WebSocketClient() throws IOException, InterruptedException {
+    public WebSocketClient() throws IOException, InterruptedException {
 
         var cookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         httpClient = HttpClient.newBuilder()
@@ -39,9 +39,10 @@ public class WebSocketClient {
 
         httpClient.send(loginRequest, HttpResponse.BodyHandlers.ofString());
 
-        listener = new WebSocketListener();
+        signaller = new WebSocketSignaller();
+        listener = new WebSocketListener(signaller);
         serverSocket = httpClient.newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8080/ws"), listener).join();
-        messenger = new WebSocketSignaller(serverSocket);
+        signaller.setSocket(serverSocket);
     }
 
 
@@ -49,22 +50,7 @@ public class WebSocketClient {
         serverSocket.sendClose(WebSocket.NORMAL_CLOSURE, "");
     }
 
-    // Single global access point
-    public static synchronized WebSocketClient getInstance() {
-        try {
-            if (instance == null) {
-                instance = new WebSocketClient();
-            }
-            return instance;
-        } catch (Exception e) {
-            // TODO: If there is an error here just stop...
-            System.out.println("There was an error connecting to the server stopping client");
-            System.exit(1);
-            return null;
-        }
-    }
-
-    public WebSocketSignaller getMessenger() {
-        return messenger;
+    public WebSocketSignaller getSignaller() {
+        return signaller;
     }
 }

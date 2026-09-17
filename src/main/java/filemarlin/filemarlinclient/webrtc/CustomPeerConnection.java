@@ -2,13 +2,12 @@ package filemarlin.filemarlinclient.webrtc;
 
 
 import dev.onvoid.webrtc.*;
+import filemarlin.filemarlinclient.websocket.WebSocketSignaller;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static filemarlin.filemarlinclient.websocket.GlobalWebSocketSignallerAccessor.Signal;
 
 public class CustomPeerConnection {
 
@@ -23,6 +22,7 @@ public class CustomPeerConnection {
     private final List<RTCIceCandidate> iceCandidateList = new ArrayList<>();
     private boolean remoteDescriptionSet = false;
 
+    private WebSocketSignaller signaller;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public CustomPeerConnection(
@@ -30,12 +30,14 @@ public class CustomPeerConnection {
             RTCConfiguration config,
             PeerConnectionFactory factory,
             RTCOfferOptions offerOptions,
-            RTCAnswerOptions answerOptions) {
+            RTCAnswerOptions answerOptions,
+            WebSocketSignaller signaller) {
 
         this.config = config;
         this.factory = factory;
         this.offerOptions = offerOptions;
         this.answerOptions = answerOptions;
+        this.signaller = signaller;
 
         createPeerConnection(id);
     }
@@ -46,7 +48,7 @@ public class CustomPeerConnection {
 
             @Override
             public void onIceCandidate(RTCIceCandidate candidate) {
-                Signal().sendSignal(id, "ice", objectMapper.valueToTree(candidate));
+                signaller.sendSignal(id, "ice", objectMapper.valueToTree(candidate));
             }
 
             @Override
@@ -68,7 +70,7 @@ public class CustomPeerConnection {
                 peerConnection.setLocalDescription(description, new SetSessionDescriptionObserver() {
                     @Override
                     public void onSuccess() {
-                        Signal().sendSignal(id, "offer", objectMapper.valueToTree(description));
+                        signaller.sendSignal(id, "offer", objectMapper.valueToTree(description));
                     }
 
                     @Override
@@ -90,7 +92,7 @@ public class CustomPeerConnection {
                 peerConnection.setLocalDescription(description, new SetSessionDescriptionObserver() {
                     @Override
                     public void onSuccess() {
-                        Signal().sendSignal(id, "answer", objectMapper.valueToTree(description));
+                        signaller.sendSignal(id, "answer", objectMapper.valueToTree(description));
                     }
 
                     @Override

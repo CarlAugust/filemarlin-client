@@ -6,12 +6,16 @@ import tools.jackson.databind.ObjectMapper;
 import java.net.http.WebSocket;
 import java.util.concurrent.CompletionStage;
 
-import static filemarlin.filemarlinclient.websocket.GlobalWebSocketSignallerAccessor.Signal;
 
 
 public class WebSocketListener implements WebSocket.Listener {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final WebSocketSignaller signaller;
+
+    public WebSocketListener(WebSocketSignaller signaller) {
+        this.signaller = signaller;
+    }
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
@@ -21,9 +25,9 @@ public class WebSocketListener implements WebSocket.Listener {
             var type = payload.get("type").asString();
 
             switch (type) {
-                case "webrtc-signal" -> Signal().receiveSignal(payload);
-                case "get-clients" -> Signal().receiveClients(payload);
-                case "error" -> Signal().receiveError(payload);
+                case "webrtc-signal" -> signaller.receiveSignal(payload);
+                case "get-clients" -> signaller.receiveClients(payload);
+                case "error" -> signaller.receiveError(payload);
             }
 
         }  catch (JacksonException e) {

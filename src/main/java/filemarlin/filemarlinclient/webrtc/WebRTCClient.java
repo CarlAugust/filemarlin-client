@@ -1,12 +1,11 @@
 package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.*;
+import filemarlin.filemarlinclient.websocket.WebSocketSignaller;
 import filemarlin.filemarlinclient.websocket.records.SignalMessageResponse;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static filemarlin.filemarlinclient.websocket.GlobalWebSocketSignallerAccessor.Signal;
 
 public class WebRTCClient {
     private final RTCConfiguration config = new RTCConfiguration();
@@ -16,11 +15,15 @@ public class WebRTCClient {
     private final RTCAnswerOptions answerOptions = new RTCAnswerOptions();
     private final Map<String, CustomPeerConnection> peerConnectionsMap = new ConcurrentHashMap<>();
 
-    public WebRTCClient() {
+    private WebSocketSignaller signaller;
+
+    public WebRTCClient(WebSocketSignaller signaller) {
+        this.signaller = signaller;
+
         iceServer.urls.add("stun:stun.l.google.com:19302");
         config.iceServers.add(iceServer);
 
-        Signal().setOnSignalEvent(this::handleSignal);
+        signaller.setOnSignalEvent(this::handleSignal);
     }
 
     private void handleSignal(SignalMessageResponse message) {
@@ -29,8 +32,7 @@ public class WebRTCClient {
     }
 
     public void establishConnection(String id) {
-        peerConnectionsMap.put(id, new CustomPeerConnection(id, config, factory, offerOptions, answerOptions));
-    }
+        peerConnectionsMap.put(id, new CustomPeerConnection(id, config, factory, offerOptions, answerOptions, signaller));}
 
     public CustomPeerConnection getConnection(String id) {
         if (!peerConnectionsMap.containsKey(id)) {
