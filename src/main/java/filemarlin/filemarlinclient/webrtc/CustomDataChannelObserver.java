@@ -3,17 +3,21 @@ package filemarlin.filemarlinclient.webrtc;
 import dev.onvoid.webrtc.RTCDataChannel;
 import dev.onvoid.webrtc.RTCDataChannelBuffer;
 import dev.onvoid.webrtc.RTCDataChannelObserver;
+import dev.onvoid.webrtc.RTCDataChannelState;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 
 public class CustomDataChannelObserver implements RTCDataChannelObserver {
 
 
-    private RTCDataChannel dataChannel;
+    private final RTCDataChannel dataChannel;
+    private final CompletableFuture<Void> connectionEstablished;
 
-    public CustomDataChannelObserver(RTCDataChannel dataChannel) {
+    public CustomDataChannelObserver(RTCDataChannel dataChannel, CompletableFuture<Void> connectionEstablished) {
         this.dataChannel = dataChannel;
+        this.connectionEstablished = connectionEstablished;
     }
 
     @Override
@@ -23,9 +27,12 @@ public class CustomDataChannelObserver implements RTCDataChannelObserver {
 
     @Override
     public void onStateChange() {
-        System.out.println(
-                "Data channel state: " + dataChannel.getState()
-        );
+        var state = dataChannel.getState();
+        switch (state) {
+            case OPEN -> {
+                connectionEstablished.complete(null);
+            }
+        }
     }
 
     @Override

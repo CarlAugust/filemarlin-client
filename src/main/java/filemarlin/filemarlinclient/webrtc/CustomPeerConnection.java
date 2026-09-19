@@ -11,6 +11,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class CustomPeerConnection {
 
@@ -22,6 +23,7 @@ public class CustomPeerConnection {
     private final RTCOfferOptions offerOptions;
     private final RTCAnswerOptions answerOptions;
     private final String peerId;
+    private final CompletableFuture<Void> connectionEstablished;
 
     private final List<RTCIceCandidate> iceCandidateList = new ArrayList<>();
     private boolean remoteDescriptionSet = false;
@@ -36,7 +38,8 @@ public class CustomPeerConnection {
             PeerConnectionFactory factory,
             RTCOfferOptions offerOptions,
             RTCAnswerOptions answerOptions,
-            Signaller signaller) {
+            Signaller signaller,
+            CompletableFuture<Void> connectionEstablished) {
 
         this.peerId = id;
         this.config = config;
@@ -44,6 +47,7 @@ public class CustomPeerConnection {
         this.offerOptions = offerOptions;
         this.answerOptions = answerOptions;
         this.signaller = signaller;
+        this.connectionEstablished = connectionEstablished;
 
         createPeerConnection(id);
     }
@@ -69,7 +73,7 @@ public class CustomPeerConnection {
             public void onDataChannel(RTCDataChannel channel) {
                 log("Set remote dataChannel");
                 dataChannel = channel;
-                dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel));
+                dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel, connectionEstablished));
             }
         });
 
@@ -78,7 +82,7 @@ public class CustomPeerConnection {
     public void createOffer(String id) throws NullPointerException {
         log("Creating offer.");
         dataChannel = peerConnection.createDataChannel("Message", new RTCDataChannelInit());
-        dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel));
+        dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel, connectionEstablished));
 
         peerConnection.createOffer(offerOptions, new CreateSessionDescriptionObserver() {
             @Override
@@ -228,7 +232,7 @@ public class CustomPeerConnection {
         return dataChannel;
     }
 
-    public RTCPeerConnection getPeerConnection() {
-        return peerConnection;
-    }
+    public RTCPeerConnection getPeerConnection() { return peerConnection; }
+
+    public CompletableFuture<Void> getConnectionEstablished() { return connectionEstablished; }
 }

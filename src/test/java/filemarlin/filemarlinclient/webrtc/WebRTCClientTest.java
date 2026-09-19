@@ -17,8 +17,8 @@ public class WebRTCClientTest {
         var clientA = new WebRTCClient(signallerA);
         var clientB = new WebRTCClient(signallerB);
 
-        clientA.establishConnection("B");
-        clientB.establishConnection("A");
+        clientA.establishConnection("B", true);
+        clientB.establishConnection("A", false);
 
         var connectionA = clientA.getConnection("B");
         var connectionB = clientB.getConnection("A");
@@ -26,9 +26,9 @@ public class WebRTCClientTest {
         assertNotNull(connectionA);
         assertNotNull(connectionB);
 
-        connectionA.createOffer("B");
+        connectionA.getConnectionEstablished().join();
+        connectionB.getConnectionEstablished().join();
 
-        Thread.sleep(5_000);
 
         assertNotNull(connectionA.getPeerConnection(), "Connection on A exists");
         assertNotNull(connectionB.getPeerConnection(), "Connections on B exists");

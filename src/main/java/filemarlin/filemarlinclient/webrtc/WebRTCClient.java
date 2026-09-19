@@ -5,7 +5,9 @@ import filemarlin.filemarlinclient.websocket.Signaller;
 import filemarlin.filemarlinclient.websocket.records.SignalMessageResponse;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class WebRTCClient {
     private final RTCConfiguration config = new RTCConfiguration();
@@ -31,12 +33,24 @@ public class WebRTCClient {
         connection.receiveSignal(message.senderId(), message.clientData().signalType(), message.clientData().signalPayload());
     }
 
-    public void establishConnection(String id) {
-        peerConnectionsMap.put(id, new CustomPeerConnection(id, config, factory, offerOptions, answerOptions, signaller));}
+    public CompletableFuture<Void> establishConnection(String id, boolean shouldCreateOffer) {
+        CompletableFuture<Void> connectionEstablished = new CompletableFuture<Void>()
+                .orTimeout(10, TimeUnit.SECONDS);
+
+        var connection = new CustomPeerConnection(id, config, factory, offerOptions, answerOptions, signaller, connectionEstablished);
+        peerConnectionsMap.put(id, connection);
+
+        if (shouldCreateOffer) {
+            connection.createOffer(id);
+        }
+
+        return connectionEstablished;
+    }
 
     public CustomPeerConnection getConnection(String id) {
         if (!peerConnectionsMap.containsKey(id)) {
-            establishConnection(id);
+            // Most likely false flag if getConnection gets run prior to creation?
+            establishConnection(id, false);
         }
         return peerConnectionsMap.get(id);
     }
