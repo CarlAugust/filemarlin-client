@@ -37,7 +37,6 @@ public class CustomDataChannelObserver implements RTCDataChannelObserver {
 
     @Override
     public void onMessage(RTCDataChannelBuffer buffer) {
-        System.out.println(buffer.toString());
 
         byte[] message = "ping".getBytes(StandardCharsets.UTF_8);
 
