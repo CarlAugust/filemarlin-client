@@ -10,11 +10,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class WebRTCClient {
-    private final RTCConfiguration config = new RTCConfiguration();
     private final RTCIceServer iceServer = new RTCIceServer();
+
+    private final RTCConfiguration config = new RTCConfiguration();
     private final PeerConnectionFactory factory = new PeerConnectionFactory();
     private final RTCOfferOptions offerOptions = new RTCOfferOptions();
     private final RTCAnswerOptions answerOptions = new RTCAnswerOptions();
+
     private final Map<String, CustomPeerConnection> peerConnectionsMap = new ConcurrentHashMap<>();
 
     private Signaller signaller;

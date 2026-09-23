@@ -22,13 +22,15 @@ public class CustomPeerConnection {
     private final PeerConnectionFactory factory;
     private final RTCOfferOptions offerOptions;
     private final RTCAnswerOptions answerOptions;
+    private final Signaller signaller;
     private final String peerId;
     private final CompletableFuture<Void> connectionEstablished;
 
     private final List<RTCIceCandidate> iceCandidateList = new ArrayList<>();
+    private final DataChannelMessageHandler messageHandler = new DataChannelMessageHandler();
+
     private boolean remoteDescriptionSet = false;
 
-    private final Signaller signaller;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
@@ -73,7 +75,7 @@ public class CustomPeerConnection {
             public void onDataChannel(RTCDataChannel channel) {
                 log("Set remote dataChannel");
                 dataChannel = channel;
-                dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel, connectionEstablished));
+                dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel, connectionEstablished, messageHandler));
             }
         });
 
@@ -81,8 +83,8 @@ public class CustomPeerConnection {
 
     public void createOffer(String id) throws NullPointerException {
         log("Creating offer.");
-        dataChannel = peerConnection.createDataChannel("Message", new RTCDataChannelInit());
-        dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel, connectionEstablished));
+        dataChannel = peerConnection.createDataChannel("File-transfer", new RTCDataChannelInit());
+        dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel, connectionEstablished, messageHandler));
 
         peerConnection.createOffer(offerOptions, new CreateSessionDescriptionObserver() {
             @Override
@@ -228,6 +230,12 @@ public class CustomPeerConnection {
     }
 
     // Only used for testing
+
+    public String getLastMessage() {
+        return messageHandler.getLastMessage();
+    }
+
+
     public RTCDataChannel getDataChannel() {
         return dataChannel;
     }

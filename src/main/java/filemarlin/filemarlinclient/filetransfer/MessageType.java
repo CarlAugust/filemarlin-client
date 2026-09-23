@@ -19,4 +19,14 @@ public enum MessageType {
     public byte getValue() {
         return this.value;
     }
+
+    public static MessageType fromByte(byte value) throws IllegalArgumentException {
+        for (var type : values()) {
+            if (type.value == value) {
+                return type;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid Message Type");
+    }
 }
