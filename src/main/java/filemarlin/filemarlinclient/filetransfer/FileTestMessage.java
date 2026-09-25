@@ -3,11 +3,13 @@ package filemarlin.filemarlinclient.filetransfer;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
-public class FileTransferMessage implements FileTransferInterface{
+public class FileTestMessage implements FileTransferMessageInterface {
 
+    private int size;
     private final byte[] data;
 
-    public FileTransferMessage(byte[] data) {
+    public FileTestMessage(int size, byte[] data) {
+        this.size = size;
         this.data = data;
     }
 
@@ -28,7 +30,7 @@ public class FileTransferMessage implements FileTransferInterface{
         return buffer;
     }
 
-    public static FileTransferMessage decode(ByteBuffer buffer) throws BufferUnderflowException {
+    public static FileTestMessage decode(ByteBuffer buffer) throws BufferUnderflowException {
         var length = buffer.getInt();
 
         if (length > 256 || length < 0) {
@@ -38,7 +40,7 @@ public class FileTransferMessage implements FileTransferInterface{
         var data = new byte[length];
         buffer.get(data);
 
-        return new FileTransferMessage(data);
+        return new FileTestMessage(length, data);
     }
 
     public byte[] getData() {
