@@ -1,7 +1,7 @@
 package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.RTCDataChannelBuffer;
-import filemarlin.filemarlinclient.filetransfer.FileTransferMessage;
+import filemarlin.filemarlinclient.filetransfer.FileTestMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +42,7 @@ public class ClientCommunicationTests {
     @Test
     public void SendFileTransferMessageTest() throws Exception {
         var expected = "hello";
-        var message = new FileTransferMessage(expected.getBytes());
+        var message = new FileTestMessage(expected.length(), expected.getBytes());
 
         connectionA.getDataChannel().send(new RTCDataChannelBuffer(message.encode(), true));
         Thread.sleep(1000);
