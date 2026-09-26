@@ -31,6 +31,7 @@ public class WebRTCClient {
     }
 
     private void handleSignal(SignalMessageResponse message) {
+        establishIfConnectionDoesntExist(message.senderId());
         var connection = getConnection(message.senderId());
         connection.receiveSignal(message.senderId(), message.clientData().signalType(), message.clientData().signalPayload());
     }
@@ -49,11 +50,30 @@ public class WebRTCClient {
         return connectionEstablished;
     }
 
-    public CustomPeerConnection getConnection(String id) {
-        if (!peerConnectionsMap.containsKey(id)) {
-            // Most likely false flag if getConnection gets run prior to creation?
+    public void establishIfConnectionDoesntExist(String id) {
+        if (peerConnectionsMap.get(id) == null) {
             establishConnection(id, false);
         }
-        return peerConnectionsMap.get(id);
+    }
+
+    public CustomPeerConnection getConnection(String id) {
+        var connection = peerConnectionsMap.get(id);
+
+        if (connection == null) {
+            throw new IllegalStateException(
+                    "No connection exists for " + id
+            );
+        }
+
+        return connection;
+    }
+
+    public void close() {
+        for (var connection : peerConnectionsMap.values()) {
+            connection.close();
+        }
+
+        peerConnectionsMap.clear();
+        factory.dispose();
     }
 }

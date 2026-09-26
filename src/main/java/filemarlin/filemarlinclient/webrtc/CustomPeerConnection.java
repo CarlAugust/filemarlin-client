@@ -222,11 +222,17 @@ public class CustomPeerConnection {
     }
 
     public void close() {
-        dataChannel.unregisterObserver();
-        dataChannel.close();
-        dataChannel.dispose();
+        if (dataChannel != null) {
+            dataChannel.unregisterObserver();
+            dataChannel.close();
+            dataChannel.dispose();
+            dataChannel = null;
+        }
 
-        peerConnection.close();
+        if (peerConnection != null) {
+            peerConnection.close();
+            peerConnection = null;
+        }
     }
 
     // Only used for testing

@@ -2,12 +2,12 @@ package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.RTCDataChannelBuffer;
 import filemarlin.filemarlinclient.filetransfer.TestMessage;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ClientCommunicationTests {
 
     public FakeSignaller signallerA;
@@ -19,7 +19,7 @@ public class ClientCommunicationTests {
     public CustomPeerConnection connectionA;
     public CustomPeerConnection connectionB;
 
-    @BeforeEach
+    @BeforeAll
     public void setUp() {
         signallerA = new FakeSignaller("A");
         signallerB = new FakeSignaller("B");
@@ -30,13 +30,17 @@ public class ClientCommunicationTests {
         clientB = new WebRTCClient(signallerB);
 
         clientA.establishConnection("B", true);
-        clientB.establishConnection("A", false);
-
         connectionA = clientA.getConnection("B");
-        connectionB = clientB.getConnection("A");
-
         connectionA.getConnectionEstablished().join();
+
+        connectionB = clientB.getConnection("A");
         connectionB.getConnectionEstablished().join();
+    }
+
+    @AfterAll
+    public void cleanUp() {
+        clientA.close();
+        clientB.close();
     }
 
     @Test
@@ -50,6 +54,5 @@ public class ClientCommunicationTests {
         var actual = connectionB.getLastMessage();
         assertEquals(expected, actual);
     }
-
 
 }
