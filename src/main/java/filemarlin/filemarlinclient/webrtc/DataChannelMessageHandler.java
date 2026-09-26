@@ -1,7 +1,9 @@
 package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.RTCDataChannelBuffer;
-import filemarlin.filemarlinclient.filetransfer.FileTestMessage;
+import filemarlin.filemarlinclient.filetransfer.FileTransferMessageDecoder;
+import filemarlin.filemarlinclient.filetransfer.FileTransferMessageInterface;
+import filemarlin.filemarlinclient.filetransfer.TestMessage;
 import filemarlin.filemarlinclient.filetransfer.MessageType;
 
 import java.nio.charset.StandardCharsets;
@@ -15,12 +17,12 @@ public class DataChannelMessageHandler {
         var data = buffer.data;
 
         try {
-            var type = MessageType.fromByte(data.get());
-
+            var message = FileTransferMessageDecoder.decode(data);
+            var type = message.getType();
             switch (type) {
-                case MESSAGE -> {
-                    var message = FileTestMessage.decode(data);
-                    lastMessage = new String(message.getData(), StandardCharsets.UTF_8);
+                case TEST -> {
+                    var testMessage = (TestMessage) message;
+                    lastMessage = new String(testMessage.getData(), StandardCharsets.UTF_8);
                 }
                 case FILE -> {
 

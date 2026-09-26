@@ -1,7 +1,7 @@
 package filemarlin.filemarlinclient.filetransfer;
 
 public enum MessageType {
-    MESSAGE(0),
+    TEST(0),
     FILE(1),
     ACCEPT(2),
     PAYLOAD(3),
