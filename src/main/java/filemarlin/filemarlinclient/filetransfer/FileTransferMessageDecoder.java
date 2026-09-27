@@ -1,12 +1,14 @@
 package filemarlin.filemarlinclient.filetransfer;
 
+import filemarlin.filemarlinclient.filetransfer.message.*;
+
 import java.nio.ByteBuffer;
 
 public class FileTransferMessageDecoder {
 
     private static FileTransferMessageInterface decodeError() {
         String errorMessage = "Could not decode received data";
-        return new ErrorMessage(0, ErrorCodes.DECODE_ERROR_LOCAL, errorMessage.length(), errorMessage);
+        return new ErrorMessage(0, ErrorCodes.DECODE_ERROR_LOCAL, errorMessage);
     }
 
     public static FileTransferMessageInterface decode(ByteBuffer buffer) {

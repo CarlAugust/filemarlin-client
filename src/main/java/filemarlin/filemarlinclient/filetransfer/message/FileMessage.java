@@ -1,18 +1,15 @@
-package filemarlin.filemarlinclient.filetransfer;
+package filemarlin.filemarlinclient.filetransfer.message;
 
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class FileMessage implements FileTransferMessageInterface {
     public long id;
     public long fileSize;
-    public int fileNameSize;
     public String fileName;
 
-    public FileMessage(long id, long fileSize, int fileNameSize, String fileName) {
+    public FileMessage(long id, long fileSize, String fileName) {
         this.fileSize = fileSize;
-        this.fileNameSize = fileNameSize;
         this.fileName = fileName;
     }
 
@@ -23,11 +20,11 @@ public class FileMessage implements FileTransferMessageInterface {
 
     @Override
     public ByteBuffer encode() {
-        var buffer = ByteBuffer.allocate(1 + Long.BYTES + Long.BYTES + Integer.BYTES + fileNameSize);
+        var buffer = ByteBuffer.allocate(1 + Long.BYTES + Long.BYTES + Integer.BYTES + fileName.length());
         buffer.put(getType().getValue());
         buffer.putLong(id);
         buffer.putLong(fileSize);
-        buffer.putInt(fileNameSize);
+        buffer.putInt(fileName.length());
         buffer.put(fileName.getBytes());
         buffer.flip();
 
@@ -49,6 +46,6 @@ public class FileMessage implements FileTransferMessageInterface {
         buffer.get(data);
         var fileName =  new String(data, StandardCharsets.UTF_8);
 
-        return new FileMessage(id, fileSize, fileNameSize, fileName);
+        return new FileMessage(id, fileSize, fileName);
     }
 }

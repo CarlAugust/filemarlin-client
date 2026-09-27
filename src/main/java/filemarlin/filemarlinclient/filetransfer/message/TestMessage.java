@@ -1,4 +1,4 @@
-package filemarlin.filemarlinclient.filetransfer;
+package filemarlin.filemarlinclient.filetransfer.message;
 
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;

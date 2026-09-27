@@ -1,7 +1,7 @@
 package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.RTCDataChannelBuffer;
-import filemarlin.filemarlinclient.filetransfer.TestMessage;
+import filemarlin.filemarlinclient.filetransfer.message.TestMessage;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

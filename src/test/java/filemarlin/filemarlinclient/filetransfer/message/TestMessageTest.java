@@ -1,4 +1,4 @@
-package filemarlin.filemarlinclient.filetransfer;
+package filemarlin.filemarlinclient.filetransfer.message;
 
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ public class TestMessageTest {
         var str = "hello";
         var expected = new TestMessage(str.length(), str.getBytes());
         var encoded = expected.encode();
-        
+
         encoded.get();
         var actual = TestMessage.decode(encoded);
 

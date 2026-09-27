@@ -1,4 +1,4 @@
-package filemarlin.filemarlinclient.filetransfer;
+package filemarlin.filemarlinclient.filetransfer.message;
 
 public enum MessageType {
     TEST(0),

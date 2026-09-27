@@ -2,9 +2,7 @@ package filemarlin.filemarlinclient.webrtc;
 
 import dev.onvoid.webrtc.RTCDataChannelBuffer;
 import filemarlin.filemarlinclient.filetransfer.FileTransferMessageDecoder;
-import filemarlin.filemarlinclient.filetransfer.FileTransferMessageInterface;
-import filemarlin.filemarlinclient.filetransfer.TestMessage;
-import filemarlin.filemarlinclient.filetransfer.MessageType;
+import filemarlin.filemarlinclient.filetransfer.message.TestMessage;
 
 import java.nio.charset.StandardCharsets;
 

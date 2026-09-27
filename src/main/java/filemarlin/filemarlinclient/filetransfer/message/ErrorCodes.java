@@ -1,4 +1,4 @@
-package filemarlin.filemarlinclient.filetransfer;
+package filemarlin.filemarlinclient.filetransfer.message;
 
 public enum ErrorCodes {
     DECODE_ERROR_LOCAL(0);
@@ -13,7 +13,7 @@ public enum ErrorCodes {
         return this.value;
     }
 
-    public static ErrorCodes fromByte(byte value) throws IllegalArgumentException {
+    public static ErrorCodes fromValue(byte value) throws IllegalArgumentException {
         for (var type : values()) {
             if (type.value == value) {
                 return type;
