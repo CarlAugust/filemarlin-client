@@ -9,6 +9,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -235,16 +236,17 @@ public class CustomPeerConnection {
         }
     }
 
+    public void send(ByteBuffer buffer) throws Exception {
+        dataChannel.send(new RTCDataChannelBuffer(buffer, true));
+    }
+
     // Only used for testing
 
     public String getLastMessage() {
         return messageHandler.getLastMessage();
     }
 
-
-    public RTCDataChannel getDataChannel() {
-        return dataChannel;
-    }
+    public RTCDataChannel getDataChannel() { return dataChannel; }
 
     public RTCPeerConnection getPeerConnection() { return peerConnection; }
 

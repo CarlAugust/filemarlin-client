@@ -48,7 +48,7 @@ public class ClientCommunicationTests {
         var expected = "hello";
         var message = new TestMessage(expected.length(), expected.getBytes());
 
-        connectionA.getDataChannel().send(new RTCDataChannelBuffer(message.encode(), true));
+        connectionA.send(message.encode());
         Thread.sleep(100);
 
         var actual = connectionB.getLastMessage();
