@@ -13,8 +13,8 @@ public class TestMessageTest {
         var str = "hello";
         var expected = new TestMessage(str.length(), str.getBytes());
         var encoded = expected.encode();
+        
         encoded.get();
-
         var actual = TestMessage.decode(encoded);
 
         assertEquals(expected.getType(), actual.getType());
