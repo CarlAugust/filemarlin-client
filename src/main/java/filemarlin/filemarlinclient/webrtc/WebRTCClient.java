@@ -17,7 +17,7 @@ public class WebRTCClient {
     private final RTCOfferOptions offerOptions = new RTCOfferOptions();
     private final RTCAnswerOptions answerOptions = new RTCAnswerOptions();
 
-    private final Map<String, CustomPeerConnection> peerConnectionsMap = new ConcurrentHashMap<>();
+    private final Map<String, WebRTCPeerConnection> peerConnectionsMap = new ConcurrentHashMap<>();
 
     private Signaller signaller;
 
@@ -40,7 +40,7 @@ public class WebRTCClient {
         CompletableFuture<Void> connectionEstablished = new CompletableFuture<Void>()
                 .orTimeout(10, TimeUnit.SECONDS);
 
-        var connection = new CustomPeerConnection(id, config, factory, offerOptions, answerOptions, signaller, connectionEstablished);
+        var connection = new WebRTCPeerConnection(id, config, factory, offerOptions, answerOptions, signaller, connectionEstablished);
         peerConnectionsMap.put(id, connection);
 
         if (shouldCreateOffer) {
@@ -56,7 +56,7 @@ public class WebRTCClient {
         }
     }
 
-    public CustomPeerConnection getConnection(String id) {
+    public WebRTCPeerConnection getConnection(String id) {
         var connection = peerConnectionsMap.get(id);
 
         if (connection == null) {

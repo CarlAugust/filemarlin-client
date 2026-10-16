@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class CustomPeerConnection {
+public class WebRTCPeerConnection {
 
     private RTCPeerConnection peerConnection = null;
     private RTCDataChannel dataChannel = null;
@@ -28,14 +28,13 @@ public class CustomPeerConnection {
     private final CompletableFuture<Void> connectionEstablished;
 
     private final List<RTCIceCandidate> iceCandidateList = new ArrayList<>();
-    private final DataChannelMessageHandler messageHandler = new DataChannelMessageHandler();
 
     private boolean remoteDescriptionSet = false;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public CustomPeerConnection(
+    public WebRTCPeerConnection(
             String id,
             RTCConfiguration config,
             PeerConnectionFactory factory,
@@ -74,9 +73,9 @@ public class CustomPeerConnection {
 
             @Override
             public void onDataChannel(RTCDataChannel channel) {
-                log("Set remote dataChannel");
+                log("Set remote dataChannel: " + channel.getLabel());
                 dataChannel = channel;
-                dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel, connectionEstablished, messageHandler));
+                dataChannel.registerObserver(new WebRTCDataChannelObserver(dataChannel, connectionEstablished));
             }
         });
 
@@ -85,7 +84,8 @@ public class CustomPeerConnection {
     public void createOffer(String id) throws NullPointerException {
         log("Creating offer.");
         dataChannel = peerConnection.createDataChannel("File-transfer", new RTCDataChannelInit());
-        dataChannel.registerObserver(new CustomDataChannelObserver(dataChannel, connectionEstablished, messageHandler));
+        dataChannel.registerObserver(new WebRTCDataChannelObserver(dataChannel, connectionEstablished));
+        // Set services to dataChannels i suppose.
 
         peerConnection.createOffer(offerOptions, new CreateSessionDescriptionObserver() {
             @Override
@@ -240,11 +240,9 @@ public class CustomPeerConnection {
         dataChannel.send(new RTCDataChannelBuffer(buffer, true));
     }
 
-    // Only used for testing
 
-    public String getLastMessage() {
-        return messageHandler.getLastMessage();
-    }
+
+    // Only used for testing
 
     public RTCDataChannel getDataChannel() { return dataChannel; }
 
