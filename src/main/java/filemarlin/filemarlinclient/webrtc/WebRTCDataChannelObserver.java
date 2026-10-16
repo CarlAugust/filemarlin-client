@@ -42,9 +42,6 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
         }
     }
 
-    public void setMessageListener(Consumer<ByteBuffer> messageListener) {
-        this.messageListener = messageListener;
-    }
 
     @Override
     public void onMessage(RTCDataChannelBuffer buffer) {
@@ -62,6 +59,10 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
         }
 
         dataChannel.send(new RTCDataChannelBuffer(byteBuffer, true));
+    }
+
+    public void setMessageListener(Consumer<ByteBuffer> messageListener) {
+        this.messageListener = messageListener;
     }
 
     public void waitForBuffer() {
