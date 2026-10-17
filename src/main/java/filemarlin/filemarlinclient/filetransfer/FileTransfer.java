@@ -1,86 +1,103 @@
 package filemarlin.filemarlinclient.filetransfer;
 
-import java.io.FileWriter;
+import filemarlin.filemarlinclient.filetransfer.message.FileMessage;
+import filemarlin.filemarlinclient.filetransfer.message.PayloadMessage;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.UUID;
 
 
-/*
-    This definitly needs more robust error handling.
-*/
-public class FileTransfer {
+public class FileTransfer implements AutoCloseable {
 
     private RandomAccessFile writer;
-    private long id;
     private String fileName;
-    private Path filePath;
-    private Path tempFilePath;
+    private long id;
 
-    /*
-        This needs to be updated to handle proper folder permissions and stuff?
-    */
-    public boolean openFile(String fileName, long id) {
-        try {
-            this.filePath = Path.of(fileName);
-            this.tempFilePath = Path.of(fileName + ".tmp");
+    private Direction direction;
+    private TransferState state;
 
-            Files.deleteIfExists(tempFilePath);
+    private long transferredBytes = 0;
+    private long totalBytes;
 
-            this.writer = new RandomAccessFile(tempFilePath.toString(), "rw");
+    public void FileTransfer(FileMessage message) {
+        this.fileName = message.fileName;
+        this.totalBytes = message.fileSize;
+        this.id = message.id;
 
-            this.id = id;
-            this.fileName = fileName;
-        } catch (IOException e) {
-            return false;
-        }
-
-        return true;
+        state = TransferState.QUEUED;
     }
 
-    public boolean writeFile(byte[] data, long offset, long id) {
-        if (id != this.id) {
-            return false;
-        }
-
-        try {
-            writer.seek(offset);
-            writer.write(data);
-
-        } catch (IOException e) {
-            return false;
-        }
-
-        return true;
+    public void start(boolean isReceiving) {
+        state = TransferState.TRANSFERRING;
+        direction = isReceiving ? Direction.RECEIVING : Direction.SENDING;
     }
 
-    public void cancel() {
-        try {
-            if (writer != null) {
-                writer.close();
-            }
+    // Write PayloadMessage to file
+    public void write(PayloadMessage payload) {
 
-            Files.deleteIfExists(tempFilePath);
-        } catch (IOException e) {
-            // WELPP... THATS TERRIBLE? TODO!!!!
-        }
     }
 
-    public boolean complete() {
-        try {
-            writer.getFD().sync();
+    // Read size bytes from offset of file
+    public Byte[] read(long offset, long size) {
+
+        return null;
+    }
+
+    public void complete() {
+        state = TransferState.COMPLETE;
+    }
+
+    public void pause() {
+        state = TransferState.PAUSED;
+    }
+
+    public void unPause() {
+        state = TransferState.TRANSFERRING;
+    }
+
+    public void calculateCheckSum() throws IllegalStateException {
+        if (state != TransferState.COMPLETE) {
+            throw new IllegalStateException("Cannot get checksum before file transfer is complete");
+        }
+
+        state = TransferState.VERIFYING;
+        // Bla bla bal calculate checksum
+    }
+
+    private void closeFile() throws IOException {
+        if (writer != null) {
             writer.close();
-
-            Files.move(tempFilePath, filePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException e) {
-            return false;
+            writer = null;
         }
-        return true;
     }
 
+    @Override
+    public synchronized void close() throws IOException {
+        closeFile();
+    }
 
+    public String getFileName() {
+        return fileName;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public long getTotalBytes() {
+        return totalBytes;
+    }
+
+    public synchronized long getTransferredBytes() {
+        return transferredBytes;
+    }
+
+    public synchronized Direction getDirection() {
+        return direction;
+    }
+
+    public synchronized TransferState getState() {
+        return state;
+    }
 
 }
