@@ -11,21 +11,15 @@ import java.util.concurrent.TimeUnit;
 
 public class WebRTCClient {
     private final RTCIceServer iceServer = new RTCIceServer();
-
-    private final RTCConfiguration config = new RTCConfiguration();
-    private final PeerConnectionFactory factory = new PeerConnectionFactory();
-    private final RTCOfferOptions offerOptions = new RTCOfferOptions();
-    private final RTCAnswerOptions answerOptions = new RTCAnswerOptions();
-
+    private final WebRTCContext context = new WebRTCContext();
     private final Map<String, WebRTCPeerConnection> peerConnectionsMap = new ConcurrentHashMap<>();
-
     private Signaller signaller;
 
     public WebRTCClient(Signaller signaller) {
         this.signaller = signaller;
 
         iceServer.urls.add("stun:stun.l.google.com:19302");
-        config.iceServers.add(iceServer);
+        context.getConfig().iceServers.add(iceServer);
 
         signaller.setOnSignalEvent(this::handleSignal);
     }
@@ -40,7 +34,7 @@ public class WebRTCClient {
         CompletableFuture<Void> connectionEstablished = new CompletableFuture<Void>()
                 .orTimeout(10, TimeUnit.SECONDS);
 
-        var connection = new WebRTCPeerConnection(id, config, factory, offerOptions, answerOptions, signaller, connectionEstablished);
+        var connection = new WebRTCPeerConnection(id, context, signaller, connectionEstablished);
         peerConnectionsMap.put(id, connection);
 
         if (shouldCreateOffer) {
@@ -74,6 +68,6 @@ public class WebRTCClient {
         }
 
         peerConnectionsMap.clear();
-        factory.dispose();
+        context.getFactory().dispose();
     }
 }

@@ -19,10 +19,9 @@ public class WebRTCPeerConnection {
     private RTCPeerConnection peerConnection = null;
     private RTCDataChannel dataChannel = null;
 
-    private final RTCConfiguration config;
-    private final PeerConnectionFactory factory;
-    private final RTCOfferOptions offerOptions;
-    private final RTCAnswerOptions answerOptions;
+    private final WebRTCContext context;
+
+
     private final Signaller signaller;
     private final String peerId;
     private final CompletableFuture<Void> connectionEstablished;
@@ -36,18 +35,12 @@ public class WebRTCPeerConnection {
 
     public WebRTCPeerConnection(
             String id,
-            RTCConfiguration config,
-            PeerConnectionFactory factory,
-            RTCOfferOptions offerOptions,
-            RTCAnswerOptions answerOptions,
+            WebRTCContext context,
             Signaller signaller,
             CompletableFuture<Void> connectionEstablished) {
 
         this.peerId = id;
-        this.config = config;
-        this.factory = factory;
-        this.offerOptions = offerOptions;
-        this.answerOptions = answerOptions;
+        this.context = context;
         this.signaller = signaller;
         this.connectionEstablished = connectionEstablished;
 
@@ -64,7 +57,7 @@ public class WebRTCPeerConnection {
 
     public void createPeerConnection(String id) {
 
-        peerConnection = factory.createPeerConnection(config, new PeerConnectionObserver() {
+        peerConnection = context.getFactory().createPeerConnection(context.getConfig(), new PeerConnectionObserver() {
 
             @Override
             public void onIceCandidate(RTCIceCandidate candidate) {
@@ -87,7 +80,7 @@ public class WebRTCPeerConnection {
         dataChannel.registerObserver(new WebRTCDataChannelObserver(dataChannel, connectionEstablished));
         // Set services to dataChannels i suppose.
 
-        peerConnection.createOffer(offerOptions, new CreateSessionDescriptionObserver() {
+        peerConnection.createOffer(context.getOfferOptions(), new CreateSessionDescriptionObserver() {
             @Override
             public void onSuccess(RTCSessionDescription description) {
                 peerConnection.setLocalDescription(description, new SetSessionDescriptionObserver() {
@@ -113,7 +106,7 @@ public class WebRTCPeerConnection {
 
     public void createAnswer(String id) {
         log("creating answer");
-        peerConnection.createAnswer(answerOptions, new CreateSessionDescriptionObserver() {
+        peerConnection.createAnswer(context.getAnswerOptions(), new CreateSessionDescriptionObserver() {
             @Override
             public void onSuccess(RTCSessionDescription description) {
                 peerConnection.setLocalDescription(description, new SetSessionDescriptionObserver() {

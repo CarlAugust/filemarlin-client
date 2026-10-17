@@ -65,15 +65,5 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
         this.messageListener = messageListener;
     }
 
-    public void waitForBuffer() {
-        long bufferedAmount = dataChannel.getBufferedAmount();
-        if (bufferedAmount < 666) {
-            return;
-        }
-
-        // Return a completable future for buffered amount?
-        return;
-    }
-
 
 }
