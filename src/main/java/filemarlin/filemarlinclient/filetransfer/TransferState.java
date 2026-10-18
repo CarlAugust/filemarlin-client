@@ -6,5 +6,6 @@ public enum TransferState {
     PAUSED,
     COMPLETE,
     VERIFYING,
+    SUCCESS,
     FAILED
 }

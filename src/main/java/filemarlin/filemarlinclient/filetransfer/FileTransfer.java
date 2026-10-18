@@ -5,13 +5,14 @@ import filemarlin.filemarlinclient.filetransfer.message.PayloadMessage;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
 
 
 public class FileTransfer implements AutoCloseable {
 
     private RandomAccessFile writer;
-    private String fileName;
     private long id;
+    private Path filePath;
 
     private Direction direction;
     private TransferState state;
@@ -19,32 +20,81 @@ public class FileTransfer implements AutoCloseable {
     private long transferredBytes = 0;
     private long totalBytes;
 
-    public void FileTransfer(FileMessage message) {
-        this.fileName = message.fileName;
-        this.totalBytes = message.fileSize;
-        this.id = message.id;
+
+    public FileTransfer(long id, long totalBytes, Path filePath) {
+        this.id = id;
+        this.totalBytes = totalBytes;
+        this.filePath = filePath;
 
         state = TransferState.QUEUED;
     }
 
-    public void start(boolean isReceiving) {
-        state = TransferState.TRANSFERRING;
+    public void start(boolean isReceiving) throws IllegalStateException, IOException {
+
+        if (state != TransferState.QUEUED) {
+            throw new IllegalStateException("Cannot start file transfer in state " + state);
+        }
         direction = isReceiving ? Direction.RECEIVING : Direction.SENDING;
+
+        if (direction == Direction.RECEIVING) {
+            writer = new RandomAccessFile(filePath.toFile(), "rw");
+        } else {
+            writer = new RandomAccessFile(filePath.toFile(), "r");
+
+            // Update total byte size as reader
+            totalBytes = writer.length();
+        }
+
+        state = TransferState.TRANSFERRING;
+    }
+
+    private boolean isWithinBounds(long offset, long size) {
+        return offset >= 0
+                && size >= 0
+                && offset <= totalBytes
+                && size <= totalBytes - offset;
     }
 
     // Write PayloadMessage to file
-    public void write(PayloadMessage payload) {
+    public void write(long offset, byte[] data) throws IOException, IllegalArgumentException {
+        if (state != TransferState.TRANSFERRING) {
+            throw new IllegalStateException("Cannot write when the state is not in Transferring");
+        }
 
+        if (!isWithinBounds(offset, data.length)) {
+            throw new IllegalArgumentException("Data size overflows the total file size");
+        }
+
+        writer.seek(offset);
+        writer.write(data);
     }
 
     // Read size bytes from offset of file
-    public Byte[] read(long offset, long size) {
+    public byte[] read(long offset, int size) throws IOException {
+        if (state != TransferState.TRANSFERRING) {
+            throw new IllegalStateException("Cannot read when the state is not in Transferring");
+        }
 
-        return null;
+        if (!isWithinBounds(offset, size)) {
+            throw new IllegalArgumentException("Trying to read outside of file size");
+        }
+
+        writer.seek(offset);
+        var data = new byte[size];
+        writer.readFully(data);
+        return data;
     }
 
-    public void complete() {
+    public void complete() throws IOException {
+        if (state != TransferState.TRANSFERRING) {
+            throw new IllegalStateException("Cannot complete a non transferring transfer");
+        }
+
+
+        writer.getFD().sync();
+
         state = TransferState.COMPLETE;
+        closeFile();
     }
 
     public void pause() {
@@ -55,13 +105,16 @@ public class FileTransfer implements AutoCloseable {
         state = TransferState.TRANSFERRING;
     }
 
-    public void calculateCheckSum() throws IllegalStateException {
+    // I want to do this later or something.
+    public String calculateCheckSum() throws IllegalStateException {
         if (state != TransferState.COMPLETE) {
             throw new IllegalStateException("Cannot get checksum before file transfer is complete");
         }
 
         state = TransferState.VERIFYING;
         // Bla bla bal calculate checksum
+
+        return "THIS CHECKSUM DOES NOT EXIST";
     }
 
     private void closeFile() throws IOException {
@@ -76,8 +129,8 @@ public class FileTransfer implements AutoCloseable {
         closeFile();
     }
 
-    public String getFileName() {
-        return fileName;
+    public Path getFilePath() {
+        return filePath;
     }
 
     public long getId() {
