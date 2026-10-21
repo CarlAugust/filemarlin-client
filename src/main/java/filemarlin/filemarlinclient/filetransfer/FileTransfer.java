@@ -5,7 +5,16 @@ import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
 
-public class FileTransfer implements AutoCloseable {
+/*
+    BIG ASSUMPTION THIS CODE MAKES
+    IT WILL ALWAYS OVERRIDE FILES, EVEN IF THEY EXIST OR NOT SO SOME SYSTEM
+    TO ASK IF YOU WANT TO OVERWRITE THE FILE
+    SHOULD EXIST LATER DOWN THE LINE
+
+
+*/
+
+public class FileTransfer {
 
     private RandomAccessFile writer;
     private long id;
@@ -119,11 +128,6 @@ public class FileTransfer implements AutoCloseable {
             writer.close();
             writer = null;
         }
-    }
-
-    @Override
-    public synchronized void close() throws IOException {
-        closeFile();
     }
 
     public Path getFilePath() {

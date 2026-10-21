@@ -8,6 +8,7 @@ public class DownloadFileMessage implements FileTransferMessageInterface {
     public String fileName;
 
     public DownloadFileMessage(long id, String fileName) {
+        this.id = id;
         this.fileName = fileName;
     }
 

@@ -4,20 +4,24 @@ import dev.onvoid.webrtc.RTCDataChannel;
 import dev.onvoid.webrtc.RTCDataChannelBuffer;
 import dev.onvoid.webrtc.RTCDataChannelObserver;
 import dev.onvoid.webrtc.RTCDataChannelState;
+import filemarlin.filemarlinclient.filetransfer.FileTransfer;
 import filemarlin.filemarlinclient.filetransfer.FileTransferMessageDecoder;
-import filemarlin.filemarlinclient.filetransfer.message.TestMessage;
+import filemarlin.filemarlinclient.filetransfer.FileTransferPath;
+import filemarlin.filemarlinclient.filetransfer.message.*;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
 
 
     private final RTCDataChannel dataChannel;
-    private Consumer<ByteBuffer> messageListener;
     private final CompletableFuture<Void> hasOpened;
+
+    private Consumer<ByteBuffer> messageListener;
 
 
     public WebRTCDataChannelObserver(RTCDataChannel dataChannel,
@@ -42,9 +46,12 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
         }
     }
 
-
     @Override
     public void onMessage(RTCDataChannelBuffer buffer) {
+
+
+        // TODO: This might have to be abstracted later as this DataChannel observer will handle
+        // File transfer for now
 
         var data = buffer.data;
         if (messageListener != null) {

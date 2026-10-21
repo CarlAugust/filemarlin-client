@@ -9,6 +9,8 @@ import java.util.Optional;
 /*
     This class should handle permission of files ect...
     I suppose in the future it should also be able to act upon paths that are permitted.
+
+    Also it should be updated to use a designated folder as well.
 */
 public class FileTransferPath {
 

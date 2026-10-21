@@ -9,6 +9,7 @@ public class UploadFileMessage implements FileTransferMessageInterface {
     public String fileName;
 
     public UploadFileMessage(long id, long fileSize, String fileName) {
+        this.id = id;
         this.fileSize = fileSize;
         this.fileName = fileName;
     }
