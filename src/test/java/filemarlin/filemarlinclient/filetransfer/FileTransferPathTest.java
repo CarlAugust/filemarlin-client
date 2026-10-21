@@ -11,6 +11,6 @@ public class FileTransferPathTest {
 
     @Test
     public void normalizingIllegalPathReturnsNull() {
-        assert(null == normalizePathToRoot("/hi/boo/../../../../../../../hi/hello"));
+        assert(normalizePathToRoot("/hi/boo/../../../../../../../hi/hello").isEmpty());
     }
 }
