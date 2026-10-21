@@ -15,18 +15,39 @@ public class FileTransferMessageDecoder {
         var type = buffer.get();
         var messageType = MessageType.fromByte(type);
 
+
         try {
             switch (messageType) {
                 case TEST -> {
                     return TestMessage.decode(buffer);
                 }
-                case FILE -> {
-                    return FileMessage.decode(buffer);
+                case UPLOAD -> {
+                    return UploadFileMessage.decode(buffer);
+                }
+                case DOWNLOAD -> {
+                    return DownloadFileMessage.decode(buffer);
+                }
+                case ACCEPT -> {
+                    return AcceptMessage.decode(buffer);
+                }
+                case PAYLOAD -> {
+                    return PayloadMessage.decode(buffer);
+                }
+                case RECEIVED -> {
+                    return ReceivedMessage.decode(buffer);
+                }
+                case COMPLETE -> {
+                    return CompleteMessage.decode(buffer);
+                }
+                case CANCEL -> {
+                    return CancelMessage.decode(buffer);
+                }
+                case ERROR -> {
+                    return ErrorMessage.decode(buffer);
                 }
                 default -> {
                     return decodeError();
                 }
-
             }
         } catch (Exception e) {
             return decodeError();

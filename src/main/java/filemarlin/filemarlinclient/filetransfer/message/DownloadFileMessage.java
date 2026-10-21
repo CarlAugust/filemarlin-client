@@ -3,27 +3,24 @@ package filemarlin.filemarlinclient.filetransfer.message;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-public class FileMessage implements FileTransferMessageInterface {
+public class DownloadFileMessage implements FileTransferMessageInterface {
     public long id;
-    public long fileSize;
     public String fileName;
 
-    public FileMessage(long id, long fileSize, String fileName) {
-        this.fileSize = fileSize;
+    public DownloadFileMessage(long id, String fileName) {
         this.fileName = fileName;
     }
 
     @Override
     public MessageType getType() {
-        return MessageType.FILE;
+        return MessageType.UPLOAD;
     }
 
     @Override
     public ByteBuffer encode() {
-        var buffer = ByteBuffer.allocate(1 + Long.BYTES + Long.BYTES + Integer.BYTES + fileName.length());
+        var buffer = ByteBuffer.allocate(1 + Long.BYTES + Integer.BYTES + fileName.length());
         buffer.put(getType().getValue());
         buffer.putLong(id);
-        buffer.putLong(fileSize);
         buffer.putInt(fileName.length());
         buffer.put(fileName.getBytes());
         buffer.flip();
@@ -32,10 +29,9 @@ public class FileMessage implements FileTransferMessageInterface {
     }
 
 
-    public static FileMessage decode(ByteBuffer buffer) throws Exception {
+    public static DownloadFileMessage decode(ByteBuffer buffer) throws Exception {
 
         var id = buffer.getLong();
-        var fileSize = buffer.getLong();
         var fileNameSize = buffer.getInt();
 
         if (fileNameSize > 256 || fileNameSize < 0) {
@@ -46,6 +42,6 @@ public class FileMessage implements FileTransferMessageInterface {
         buffer.get(data);
         var fileName =  new String(data, StandardCharsets.UTF_8);
 
-        return new FileMessage(id, fileSize, fileName);
+        return new DownloadFileMessage(id, fileName);
     }
 }

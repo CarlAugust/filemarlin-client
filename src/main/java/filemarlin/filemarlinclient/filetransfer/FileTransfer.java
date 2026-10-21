@@ -1,8 +1,5 @@
 package filemarlin.filemarlinclient.filetransfer;
 
-import filemarlin.filemarlinclient.filetransfer.message.FileMessage;
-import filemarlin.filemarlinclient.filetransfer.message.PayloadMessage;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;

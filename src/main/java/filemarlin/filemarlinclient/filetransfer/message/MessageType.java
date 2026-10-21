@@ -2,13 +2,14 @@ package filemarlin.filemarlinclient.filetransfer.message;
 
 public enum MessageType {
     TEST(0),
-    FILE(1),
-    ACCEPT(2),
-    PAYLOAD(3),
-    RECEIVED(4),
-    COMPLETE(5),
-    CANCEL(6),
-    ERROR(7);
+    UPLOAD(1),
+    DOWNLOAD(2),
+    ACCEPT(3),
+    PAYLOAD(4),
+    RECEIVED(5),
+    COMPLETE(6),
+    CANCEL(7),
+    ERROR(8);
 
     private final byte value;
 
