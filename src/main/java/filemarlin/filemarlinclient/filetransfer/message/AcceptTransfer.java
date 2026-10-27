@@ -2,16 +2,16 @@ package filemarlin.filemarlinclient.filetransfer.message;
 
 import java.nio.ByteBuffer;
 
-public class AcceptMessage implements FileTransferMessageInterface {
+public class AcceptTransfer implements FileTransferMessageInterface {
     public long id;
 
-    public AcceptMessage(long id) {
+    public AcceptTransfer(long id) {
         this.id = id;
     }
 
     @Override
     public MessageType getType() {
-        return MessageType.ACCEPT;
+        return MessageType.ACCEPT_TRANSFER;
     }
 
     @Override
@@ -27,9 +27,9 @@ public class AcceptMessage implements FileTransferMessageInterface {
         return buffer;
     }
 
-    public static AcceptMessage decode(ByteBuffer buffer) throws Exception {
+    public static AcceptTransfer decode(ByteBuffer buffer) throws Exception {
         var id = buffer.getLong();
 
-        return new AcceptMessage(id);
+        return new AcceptTransfer(id);
     }
 }

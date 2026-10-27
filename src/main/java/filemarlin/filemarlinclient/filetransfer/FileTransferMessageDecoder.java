@@ -21,14 +21,14 @@ public class FileTransferMessageDecoder {
                 case TEST -> {
                     return TestMessage.decode(buffer);
                 }
-                case UPLOAD -> {
-                    return UploadFileMessage.decode(buffer);
+                case UPLOAD_REQUEST -> {
+                    return UploadRequest.decode(buffer);
                 }
-                case DOWNLOAD -> {
-                    return DownloadFileMessage.decode(buffer);
+                case DOWNLOAD_REQUEST -> {
+                    return DownloadRequest.decode(buffer);
                 }
-                case ACCEPT -> {
-                    return AcceptMessage.decode(buffer);
+                case ACCEPT_TRANSFER -> {
+                    return AcceptTransfer.decode(buffer);
                 }
                 case PAYLOAD -> {
                     return PayloadMessage.decode(buffer);

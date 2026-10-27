@@ -1,6 +1,6 @@
 package filemarlin.filemarlinclient.filetransfer;
 
-import filemarlin.filemarlinclient.filetransfer.message.UploadFileMessage;
+import filemarlin.filemarlinclient.filetransfer.message.UploadRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,7 +13,7 @@ public class FileServiceTest {
         var service = new FileService();
         var expectedId = 22;
 
-        var message = new UploadFileMessage(expectedId, 32, "potatotest");
+        var message = new UploadRequest(expectedId, 32, "potatotest");
 
         service.onMessage(message.encode());
 

@@ -2,9 +2,9 @@ package filemarlin.filemarlinclient.filetransfer.message;
 
 public enum MessageType {
     TEST(0),
-    UPLOAD(1),
-    DOWNLOAD(2),
-    ACCEPT(3),
+    UPLOAD_REQUEST(1),
+    DOWNLOAD_REQUEST(2),
+    ACCEPT_TRANSFER(3),
     PAYLOAD(4),
     RECEIVED(5),
     COMPLETE(6),
