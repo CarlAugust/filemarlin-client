@@ -52,7 +52,7 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
             case OPEN:
                 System.out.println("Data channel is open and ready to use");
                 hasOpened.complete(null);
-                
+
                 break;
             case CLOSING:
                 System.out.println("Data channel is being closed");
@@ -61,6 +61,7 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
                 System.out.println("Data channel is closed");
 
         }
+    }
 
     @Override
     public void onMessage(RTCDataChannelBuffer buffer) {
