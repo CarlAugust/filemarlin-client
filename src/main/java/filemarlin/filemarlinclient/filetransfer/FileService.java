@@ -1,6 +1,7 @@
 package filemarlin.filemarlinclient.filetransfer;
 
 import filemarlin.filemarlinclient.filetransfer.message.*;
+import filemarlin.filemarlinclient.general.ThrowingConsumer;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -10,16 +11,18 @@ import java.util.function.Consumer;
 public class FileService {
 
     private final Map<Long, FileTransfer> fileTransferMap = new ConcurrentHashMap<>();
-    private Consumer<ByteBuffer> messageSender;
+    private ThrowingConsumer<ByteBuffer> messageSender;
 
-    public void setMessageSender(Consumer<ByteBuffer> sender) {
+    public void setMessageSender(ThrowingConsumer<ByteBuffer> sender) {
         messageSender = sender;
     }
 
-    public void send(ByteBuffer buffer) {
-        if (messageSender != null) {
-            messageSender.accept(buffer);
+    public void send(ByteBuffer buffer) throws Exception {
+        if (messageSender == null) {
+            return;
         }
+
+        messageSender.accept(buffer);
     }
 
     public void onMessage(ByteBuffer data) {
@@ -31,19 +34,31 @@ public class FileService {
                 var typed_data = (TestMessage)decoded_data;
             }
             case UPLOAD -> {
-                var typed_data = (UploadFileMessage)decoded_data;
-                var path = FileTransferPath.normalizePathToRoot(typed_data.fileName);
+                var uploadMessage = (UploadFileMessage)decoded_data;
+                var path = FileTransferPath.normalizePathToRoot(uploadMessage.fileName);
                 if (path.isEmpty()) {
-                    // Send Permission rejected Error
+                    // TODO: Send Permission rejected Error
                     break;
                 }
 
-                var fileTransfer = new FileTransfer(typed_data.id, typed_data.fileSize, path.get());
+                var acceptMessage = new AcceptMessage(uploadMessage.id);
+                send(acceptMessage.encode());
 
+                var fileTransfer = new FileTransfer(uploadMessage.id, uploadMessage.fileSize, path.get(), true);
                 fileTransferMap.put(fileTransfer.getId(), fileTransfer);
+
             }
             case DOWNLOAD -> {
-                var typed_data = (DownloadFileMessage)decoded_data;
+                var downloadMessage = (DownloadFileMessage)decoded_data;
+                var path =  FileTransferPath.normalizePathToRoot(downloadMessage.fileName);
+                if (path.isEmpty()) {
+                    // TODO: Send permission denied or file does not exist message
+                    break;
+                }
+
+                var fileTransfer = new FileTransfer(downloadMessage.id, 0, path.get(), false);
+                fileTransferMap.put(fileTransfer.getId(), fileTransfer);
+
             }
             case ACCEPT -> {
                 var typed_data = (AcceptMessage)decoded_data;

@@ -20,15 +20,16 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
 
     private final RTCDataChannel dataChannel;
     private final CompletableFuture<Void> hasOpened;
-
     private Consumer<ByteBuffer> messageListener;
 
 
     public WebRTCDataChannelObserver(RTCDataChannel dataChannel,
-                                     CompletableFuture<Void> hasOpened
+                                     CompletableFuture<Void> hasOpened,
+                                     Consumer<ByteBuffer> messageListener
     ) {
         this.dataChannel = dataChannel;
         this.hasOpened = hasOpened;
+        this.messageListener = messageListener;
     }
 
     @Override
@@ -66,19 +67,11 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
     @Override
     public void onMessage(RTCDataChannelBuffer buffer) {
 
-
-        // TODO: This might have to be abstracted later as this DataChannel observer will handle
-        // File transfer for now
-
         var data = buffer.data;
         if (messageListener != null) {
             messageListener.accept(data);
         }
 
-    }
-
-    public void setMessageListener(Consumer<ByteBuffer> messageListener) {
-        this.messageListener = messageListener;
     }
 
 

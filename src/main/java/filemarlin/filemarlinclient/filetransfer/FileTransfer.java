@@ -14,7 +14,7 @@ import java.nio.file.Path;
 
 */
 
-public class FileTransfer {
+public class FileTransfer implements AutoCloseable {
 
     private RandomAccessFile writer;
     private long id;
@@ -27,20 +27,21 @@ public class FileTransfer {
     private long totalBytes;
 
 
-    public FileTransfer(long id, long totalBytes, Path filePath) {
+    public FileTransfer(long id, long totalBytes, Path filePath, boolean isReceiving) {
         this.id = id;
         this.totalBytes = totalBytes;
         this.filePath = filePath;
 
+        this.direction = isReceiving ? Direction.RECEIVING : Direction.SENDING;
+
         state = TransferState.QUEUED;
     }
 
-    public void start(boolean isReceiving) throws IllegalStateException, IOException {
+    public void start() throws IllegalStateException, IOException {
 
         if (state != TransferState.QUEUED) {
             throw new IllegalStateException("Cannot start file transfer in state " + state);
         }
-        direction = isReceiving ? Direction.RECEIVING : Direction.SENDING;
 
         if (direction == Direction.RECEIVING) {
             writer = new RandomAccessFile(filePath.toFile(), "rw");
@@ -128,6 +129,12 @@ public class FileTransfer {
             writer.close();
             writer = null;
         }
+    }
+
+    @Override
+    public void close() {
+        try { closeFile(); }
+        catch (IOException e) { System.out.println(e.getMessage()); }
     }
 
     public Path getFilePath() {

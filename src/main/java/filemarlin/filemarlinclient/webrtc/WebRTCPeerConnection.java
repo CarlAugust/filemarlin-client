@@ -2,6 +2,7 @@ package filemarlin.filemarlinclient.webrtc;
 
 
 import dev.onvoid.webrtc.*;
+import filemarlin.filemarlinclient.filetransfer.FileService;
 import filemarlin.filemarlinclient.webrtc.dto.IceCandidateDto;
 import filemarlin.filemarlinclient.webrtc.dto.SessionDescriptionDto;
 import filemarlin.filemarlinclient.websocket.Signaller;
@@ -20,13 +21,12 @@ public class WebRTCPeerConnection {
     private RTCDataChannel dataChannel = null;
 
     private final WebRTCContext context;
-
-
     private final Signaller signaller;
     private final String peerId;
     private final CompletableFuture<Void> connectionEstablished;
-
     private final List<RTCIceCandidate> iceCandidateList = new ArrayList<>();
+
+    private final FileService fileService = new FileService();
 
     private boolean remoteDescriptionSet = false;
 
@@ -68,7 +68,11 @@ public class WebRTCPeerConnection {
             public void onDataChannel(RTCDataChannel channel) {
                 log("Set remote dataChannel: " + channel.getLabel());
                 dataChannel = channel;
-                dataChannel.registerObserver(new WebRTCDataChannelObserver(dataChannel, connectionEstablished));
+
+                var observer = new WebRTCDataChannelObserver(dataChannel, connectionEstablished, fileService::onMessage);
+                dataChannel.registerObserver(observer);
+                fileService.setMessageSender(WebRTCPeerConnection.this::send);
+
             }
         });
 
@@ -77,7 +81,11 @@ public class WebRTCPeerConnection {
     public void createOffer(String id) throws NullPointerException {
         log("Creating offer.");
         dataChannel = peerConnection.createDataChannel("File-transfer", new RTCDataChannelInit());
-        dataChannel.registerObserver(new WebRTCDataChannelObserver(dataChannel, connectionEstablished));
+
+        var observer = new WebRTCDataChannelObserver(dataChannel, connectionEstablished, fileService::onMessage);
+        dataChannel.registerObserver(observer);
+        fileService.setMessageSender(this::send);
+
         // Set services to dataChannels i suppose.
 
         peerConnection.createOffer(context.getOfferOptions(), new CreateSessionDescriptionObserver() {
@@ -230,7 +238,9 @@ public class WebRTCPeerConnection {
     }
 
     public void send(ByteBuffer buffer) throws Exception {
-        dataChannel.send(new RTCDataChannelBuffer(buffer, true));
+        if (dataChannel != null) {
+            dataChannel.send(new RTCDataChannelBuffer(buffer, true));
+        }
     }
 
 
