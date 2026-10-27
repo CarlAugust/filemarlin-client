@@ -36,10 +36,10 @@ public class FileTransferMessageDecoder {
                 case RECEIVED -> {
                     return ReceivedMessage.decode(buffer);
                 }
-                case COMPLETE -> {
+                case COMPLETE_TRANSFER -> {
                     return CompleteMessage.decode(buffer);
                 }
-                case CANCEL -> {
+                case CANCEL_TRANSFER -> {
                     return CancelMessage.decode(buffer);
                 }
                 case ERROR -> {

@@ -47,9 +47,9 @@ public class FileService {
                 }
                 case RECEIVED -> {
                 }
-                case COMPLETE -> {
+                case COMPLETE_TRANSFER -> {
                 }
-                case CANCEL -> {
+                case CANCEL_TRANSFER -> {
                 }
                 case ERROR -> {
                 }

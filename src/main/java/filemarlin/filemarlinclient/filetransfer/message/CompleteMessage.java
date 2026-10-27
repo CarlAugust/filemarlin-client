@@ -11,7 +11,7 @@ public class CompleteMessage implements FileTransferMessageInterface {
 
     @Override
     public MessageType getType() {
-        return MessageType.COMPLETE;
+        return MessageType.COMPLETE_TRANSFER;
     }
 
     @Override

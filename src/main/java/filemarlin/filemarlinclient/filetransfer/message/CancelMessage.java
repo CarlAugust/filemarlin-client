@@ -14,7 +14,7 @@ public class CancelMessage implements FileTransferMessageInterface {
 
     @Override
     public MessageType getType() {
-        return MessageType.CANCEL;
+        return MessageType.CANCEL_TRANSFER;
     }
 
     @Override
