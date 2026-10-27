@@ -32,19 +32,35 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
     }
 
     @Override
-    public void onBufferedAmountChange(long previousAmount) {
-        System.out.println("Welp something happened in the buffer " + previousAmount);
+    public void onBufferedAmountChange(long sentDataSize) {
+        long currentAmount = dataChannel.getBufferedAmount();
+        System.out.println("Buffered amount decreased by " + sentDataSize +
+                " to " + currentAmount + " bytes");
     }
 
     @Override
     public void onStateChange() {
-        var state = dataChannel.getState();
+        // Called when the data channel state changes
+        RTCDataChannelState state = dataChannel.getState();
+        System.out.println("Data channel state changed to: " + state);
+
+        // Handle different states
         switch (state) {
-            case OPEN -> {
+            case CONNECTING:
+                System.out.println("Data channel is being established");
+                break;
+            case OPEN:
+                System.out.println("Data channel is open and ready to use");
                 hasOpened.complete(null);
-            }
+                
+                break;
+            case CLOSING:
+                System.out.println("Data channel is being closed");
+                break;
+            case CLOSED:
+                System.out.println("Data channel is closed");
+
         }
-    }
 
     @Override
     public void onMessage(RTCDataChannelBuffer buffer) {
@@ -58,14 +74,6 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
             messageListener.accept(data);
         }
 
-    }
-
-    public void send(ByteBuffer byteBuffer) throws Exception {
-        if (dataChannel.getState() != RTCDataChannelState.OPEN) {
-            throw new IllegalStateException("Data channel is not open");
-        }
-
-        dataChannel.send(new RTCDataChannelBuffer(byteBuffer, true));
     }
 
     public void setMessageListener(Consumer<ByteBuffer> messageListener) {
