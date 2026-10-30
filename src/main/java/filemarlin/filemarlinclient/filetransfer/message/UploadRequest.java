@@ -6,12 +6,12 @@ import java.nio.charset.StandardCharsets;
 public class UploadRequest implements FileTransferMessageInterface {
     public long id;
     public long fileSize;
-    public String fileName;
+    public String fileDestination;
 
-    public UploadRequest(long id, long fileSize, String fileName) {
+    public UploadRequest(long id, long fileSize, String fileDestination) {
         this.id = id;
         this.fileSize = fileSize;
-        this.fileName = fileName;
+        this.fileDestination = fileDestination;
     }
 
     @Override
@@ -21,12 +21,14 @@ public class UploadRequest implements FileTransferMessageInterface {
 
     @Override
     public ByteBuffer encode() {
-        var buffer = ByteBuffer.allocate(1 + Long.BYTES + Long.BYTES + Integer.BYTES + fileName.length());
+        var fileDestinationBytes = fileDestination.getBytes(StandardCharsets.UTF_8);
+        var buffer = ByteBuffer.allocate(1 + Long.BYTES + Long.BYTES + Integer.BYTES + fileDestinationBytes.length);
+
         buffer.put(getType().getValue());
         buffer.putLong(id);
         buffer.putLong(fileSize);
-        buffer.putInt(fileName.length());
-        buffer.put(fileName.getBytes());
+        buffer.putInt(fileDestinationBytes.length);
+        buffer.put(fileDestinationBytes);
         buffer.flip();
 
         return buffer;
@@ -37,16 +39,16 @@ public class UploadRequest implements FileTransferMessageInterface {
 
         var id = buffer.getLong();
         var fileSize = buffer.getLong();
-        var fileNameSize = buffer.getInt();
 
-        if (fileNameSize > 256 || fileNameSize < 0) {
-            throw new IllegalArgumentException("Filename to long: " + fileNameSize);
+        var fileDestinationSize = buffer.getInt();
+        if (fileDestinationSize > 256 || fileDestinationSize < 0) {
+            throw new IllegalArgumentException("Filename to long: " + fileDestinationSize);
         }
 
-        var data = new byte[fileNameSize];
-        buffer.get(data);
-        var fileName =  new String(data, StandardCharsets.UTF_8);
+        var fileDestinationBytes = new byte[fileDestinationSize];
+        buffer.get(fileDestinationBytes);
+        var fileDestination =  new String(fileDestinationBytes, StandardCharsets.UTF_8);
 
-        return new UploadRequest(id, fileSize, fileName);
+        return new UploadRequest(id, fileSize, fileDestination);
     }
 }

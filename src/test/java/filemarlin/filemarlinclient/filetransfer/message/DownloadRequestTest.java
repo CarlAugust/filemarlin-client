@@ -8,14 +8,16 @@ public class DownloadRequestTest {
 
     @Test
     public void encodeDecodeConsistency() throws Exception {
-        var expectedFileName = "Hello guys";
-        var expected = new DownloadRequest(22, expectedFileName);
+        var expectedFileDestination = "Hello guys";
+        var expectedFileSource = "Bye guys";
+        var expected = new DownloadRequest(22, expectedFileSource,  expectedFileDestination);
         var encoded = expected.encode();
 
         encoded.get();
         var actual = DownloadRequest.decode(encoded);
 
         assertEquals(expected.id, actual.id);
-        assertEquals(expected.fileName, actual.fileName);
+        assertEquals(expected.fileSource, actual.fileSource);
+        assertEquals(expected.fileDestination, actual.fileDestination);
     }
 }

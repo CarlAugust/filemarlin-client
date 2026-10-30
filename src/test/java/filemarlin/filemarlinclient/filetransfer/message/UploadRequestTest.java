@@ -17,6 +17,6 @@ public class UploadRequestTest {
 
         assertEquals(expected.id, actual.id);
         assertEquals(expected.fileSize, actual.fileSize);
-        assertEquals(expected.fileName, actual.fileName);
+        assertEquals(expected.fileDestination, actual.fileDestination);
     }
 }
