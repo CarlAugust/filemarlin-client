@@ -1,6 +1,7 @@
 package filemarlin.filemarlinclient.filetransfer;
 
 public enum TransferState {
+    PENDING,
     QUEUED,
     TRANSFERRING,
     PAUSED,

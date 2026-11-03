@@ -8,7 +8,7 @@ public class FileDownload {
     private RandomAccessFile writer;
     private long id;
     private Path filePath;
-    private long totalBytes;
+    private long totalBytes = 0;
 
     private TransferState transferState;
 
