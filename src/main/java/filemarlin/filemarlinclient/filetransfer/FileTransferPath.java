@@ -15,7 +15,7 @@ import java.util.Optional;
 public class FileTransferPath {
 
     // https://stackoverflow.com/questions/53126527/safe-way-to-resolve-java-path
-    public static Optional<Path> normalizePathToRoot(String stringPath) {
+    public static Optional<Path> verifyLegalAndNormalizePathToRoot(String stringPath) {
 
         Path root = Paths.get("").toAbsolutePath().normalize();
         Path path = root.normalize().resolve(stringPath).normalize();

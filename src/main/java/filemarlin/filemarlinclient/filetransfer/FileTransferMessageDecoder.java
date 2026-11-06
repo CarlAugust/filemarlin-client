@@ -27,8 +27,8 @@ public class FileTransferMessageDecoder {
                 case DOWNLOAD_REQUEST -> {
                     return DownloadRequest.decode(buffer);
                 }
-                case ACCEPT_TRANSFER -> {
-                    return AcceptTransfer.decode(buffer);
+                case ACCEPT_UPLOAD -> {
+                    return AcceptUpload.decode(buffer);
                 }
                 case PAYLOAD -> {
                     return PayloadMessage.decode(buffer);
