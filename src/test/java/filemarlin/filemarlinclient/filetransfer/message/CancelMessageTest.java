@@ -8,13 +8,12 @@ public class CancelMessageTest {
 
     @Test
     public void EncodeDecodeConsistency() throws Exception {
-        var expected = new CancelMessage(22, "Cause i felt like it");
+        var expected = new CancelMessage(22);
         var encoded = expected.encode();
 
         encoded.get();
         var actual = CancelMessage.decode(encoded);
 
         assertEquals(expected.id, actual.id);
-        assertEquals(expected.reason, actual.reason);
     }
 }

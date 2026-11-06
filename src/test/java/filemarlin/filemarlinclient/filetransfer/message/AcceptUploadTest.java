@@ -4,15 +4,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AcceptTransferTest {
+public class AcceptUploadTest {
 
     @Test
     public void EncodeDecodeConsistency() throws Exception {
-        var expected = new AcceptTransfer(22);
+        var expected = new AcceptUpload(22);
         var encoded = expected.encode();
 
         encoded.get();
-        var actual = AcceptTransfer.decode(encoded);
+        var actual = AcceptUpload.decode(encoded);
 
         assertEquals(expected.id, actual.id);
     }
