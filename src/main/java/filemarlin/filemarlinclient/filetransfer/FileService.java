@@ -3,8 +3,8 @@ package filemarlin.filemarlinclient.filetransfer;
 import filemarlin.filemarlinclient.filetransfer.message.*;
 import filemarlin.filemarlinclient.general.ThrowingConsumer;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,12 +19,15 @@ public class FileService {
         messageSender = sender;
     }
 
-    public void send(ByteBuffer buffer) throws Exception {
-        if (messageSender == null) {
-            return;
+    public void send(ByteBuffer buffer) {
+        try {
+            if (messageSender != null) {
+                messageSender.accept(buffer);
+            }
+        } catch (Exception e) {
+            // TODO: What if message sent fails?
+            System.out.println(e.toString());
         }
-
-        messageSender.accept(buffer);
     }
 
     public void onMessage(ByteBuffer buffer) {
@@ -43,9 +46,11 @@ public class FileService {
                 }
                 case DOWNLOAD_REQUEST -> {
                     var downloadMessage = DownloadRequest.decode(buffer);
-
+                    handleDownloadRequest(downloadMessage);
                 }
-                case ACCEPT_TRANSFER -> {
+                case ACCEPT_UPLOAD -> {
+                    var acceptUpload = AcceptUpload.decode(buffer);
+                    handleAcceptUpload(acceptUpload);
                 }
                 case PAYLOAD -> {
                 }
@@ -65,51 +70,54 @@ public class FileService {
 
     public void handleUploadRequest(UploadRequest uploadRequest) {
 
-        var path = FileTransferPath.normalizePathToRoot(uploadRequest.fileDestination);
+        var path = FileTransferPath.verifyLegalAndNormalizePathToRoot(uploadRequest.fileDestination);
         if (path.isEmpty()) {
             // TODO: Send Permission rejected Error
             return;
         }
 
-        var acceptMessage = new AcceptTransfer(uploadRequest.id);
-        try {
-            send(acceptMessage.encode());
-        } catch (Exception e) {
-            // TODO: Should cancel if fails
-
-        }
-
         var fileDownload = new FileDownload(uploadRequest.id, path.get(), uploadRequest.fileSize);
         fileDownloadMap.put(uploadRequest.id, fileDownload);
+
+        var acceptMessage = new AcceptUpload(uploadRequest.id);
+        send(acceptMessage.encode());
     }
 
     public void handleDownloadRequest(DownloadRequest downloadRequest) {
 
 
-        var path =  FileTransferPath.normalizePathToRoot(downloadRequest.fileSource);
+        var path =  FileTransferPath.verifyLegalAndNormalizePathToRoot(downloadRequest.fileSource);
         if (path.isEmpty()) {
             // TODO: Send permission denied or file does not exist message
             return;
         }
 
-        if (fileUploadMap.containsKey(downloadRequest.id)) {
+        if (!fileUploadMap.containsKey(downloadRequest.id)) {
             // TODO: Send non unique id error
             return;
         }
 
-        try {
-            var fileUpload = new FileUpload(downloadRequest.id, path.get());
-            fileUploadMap.put(downloadRequest.id, fileUpload);
+        var fileUpload = new FileUpload(downloadRequest.id, path.get());
+        fileUploadMap.put(downloadRequest.id, fileUpload);
 
-            var uploadRequest = new UploadRequest(downloadRequest.id, fileUpload.getTotalBytes(), downloadRequest.fileDestination);
-            messageSender.accept(uploadRequest.encode());
-
-        } catch (Exception e) {
-            // TODO: What should i do when this happens? I might not need to handle anything because silence will be the error... maybe a bad decision
-            System.out.println(e.toString());
-            fileUploadMap.computeIfPresent(downloadRequest.id, (k, v) -> fileUploadMap.remove(k));
-        }
-
+        var uploadRequest = new UploadRequest(downloadRequest.id, fileUpload.getTotalBytes(), downloadRequest.fileDestination);
+        send(uploadRequest.encode());
     }
 
+    public void handleAcceptUpload(AcceptUpload acceptUpload) {
+        if (!fileUploadMap.containsKey(acceptUpload.id)) {
+            // TODO: WTF??? Why are you accepting unexistent things
+            return;
+        }
+
+        fileUploadMap.get(acceptUpload.id).approve();
+    }
+
+    public Map<Long, FileUpload> getUploads() {
+        return Collections.unmodifiableMap(fileUploadMap);
+    }
+
+    public Map<Long, FileDownload> getDownloads() {
+        return Collections.unmodifiableMap(fileDownloadMap);
+    }
 }

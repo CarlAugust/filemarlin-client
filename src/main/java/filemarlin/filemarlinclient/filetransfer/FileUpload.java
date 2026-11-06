@@ -14,20 +14,25 @@ public class FileUpload {
     private long totalBytes = 0;
     private long offset = 0;
 
-    public FileUpload(long id, Path filePath) throws IOException {
+    public FileUpload(long id, Path filePath) {
         this.id = id;
         this.filePath = filePath;
 
-        this.transferState = TransferState.PENDING;
-
-        // Assuming all Uploads will pass because uploads will happen via a client interface, though security should of course be added
-
-        writer = new RandomAccessFile(filePath.toFile(), "r");
-        totalBytes = writer.length();
+        transferState = TransferState.PENDING;
+        totalBytes = filePath.toFile().length();
     }
 
-    public void start() {
+    public void approve() {
+        transferState = TransferState.QUEUED;
+    }
 
+    public void start() throws IOException {
+        writer = new RandomAccessFile(filePath.toFile(), "r");
+        transferState = TransferState.TRANSFERRING;
+    }
+
+    public synchronized TransferState getTransferState() {
+        return transferState;
     }
 
     public synchronized long getTotalBytes() {
