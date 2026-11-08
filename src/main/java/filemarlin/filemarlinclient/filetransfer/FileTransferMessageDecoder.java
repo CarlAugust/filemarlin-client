@@ -31,7 +31,7 @@ public class FileTransferMessageDecoder {
                     return AcceptUpload.decode(buffer);
                 }
                 case PAYLOAD -> {
-                    return PayloadMessage.decode(buffer);
+                    return ChunkMessage.decode(buffer);
                 }
                 case RECEIVED -> {
                     return ReceivedMessage.decode(buffer);

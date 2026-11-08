@@ -18,8 +18,8 @@ public class FileUpload {
         this.id = id;
         this.filePath = filePath;
 
-        transferState = TransferState.PENDING;
         totalBytes = filePath.toFile().length();
+        transferState = TransferState.PENDING;
     }
 
     public void approve() {

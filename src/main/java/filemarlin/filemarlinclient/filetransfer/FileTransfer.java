@@ -62,7 +62,7 @@ public class FileTransfer implements AutoCloseable {
                 && size <= totalBytes - offset;
     }
 
-    // Write PayloadMessage to file
+    // Write ChunkMessage to file
     public void write(long offset, byte[] data) throws IOException, IllegalArgumentException {
         if (state != TransferState.TRANSFERRING) {
             throw new IllegalStateException("Cannot write when the state is not in Transferring");
