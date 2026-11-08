@@ -2,13 +2,13 @@ package filemarlin.filemarlinclient.filetransfer.message;
 
 import java.nio.ByteBuffer;
 
-public class PayloadMessage implements FileTransferMessageInterface {
+public class ChunkMessage implements FileTransferMessageInterface {
     public long id;
     public long offset;
     public int size;
     public byte[] data;
 
-    public PayloadMessage(long id, long offset, int size, byte[] data) {
+    public ChunkMessage(long id, long offset, int size, byte[] data) {
         this.id = id;
         this.offset = offset;
         this.size = size;
@@ -17,7 +17,7 @@ public class PayloadMessage implements FileTransferMessageInterface {
 
     @Override
     public MessageType getType() {
-        return MessageType.PAYLOAD;
+        return MessageType.CHUNK;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class PayloadMessage implements FileTransferMessageInterface {
         return buffer;
     }
 
-    public static PayloadMessage decode(ByteBuffer buffer) throws Exception {
+    public static ChunkMessage decode(ByteBuffer buffer) throws Exception {
         var id = buffer.getLong();
         var offset = buffer.getLong();
         var size = buffer.getInt();
@@ -48,6 +48,6 @@ public class PayloadMessage implements FileTransferMessageInterface {
         var data = new byte[size];
         buffer.get(data);
 
-        return new PayloadMessage(id, offset, size, data);
+        return new ChunkMessage(id, offset, size, data);
     }
 }

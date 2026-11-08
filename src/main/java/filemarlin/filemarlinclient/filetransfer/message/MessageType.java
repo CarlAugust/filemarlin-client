@@ -11,8 +11,9 @@ public enum MessageType {
     COMPLETE_TRANSFER(5),
     CANCEL_TRANSFER(6),
 
-    PAYLOAD(7),
+    CHUNK(7),
     RECEIVED(8),
+    
     ERROR(9);
 
     private final byte value;
