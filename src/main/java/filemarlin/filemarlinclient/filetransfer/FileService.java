@@ -3,14 +3,21 @@ package filemarlin.filemarlinclient.filetransfer;
 import filemarlin.filemarlinclient.filetransfer.message.*;
 import filemarlin.filemarlinclient.general.ThrowingConsumer;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class FileService {
 
     private final Map<Long, FileUpload> fileUploadMap = new ConcurrentHashMap<>();
+    private final BlockingQueue<Long> fileUploadQueue = new LinkedBlockingQueue<>();
+
     private final Map<Long, FileDownload> fileDownloadMap = new ConcurrentHashMap<>();
 
     private ThrowingConsumer<ByteBuffer> messageSender;
@@ -30,6 +37,63 @@ public class FileService {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Async running functions?
+
+    /*
+        NOTE FOR THIS FUNCTION startTransfer
+        There might be a race condition on sending a start message and starting a transfer, if the file service
+        has an async task that automatically sends from current transferring uploads. I think the simple fix is to
+        allow this async to start the transfer, forcing it to send a start transfer prior to sending chunks.
+        Because send is blocking for a thread.
+    */
+    public void startTransfer(long id) {
+        if (!fileUploadMap.containsKey(id)) {
+            System.out.println("Cannot start transfer for unexisting id");
+        }
+
+        var upload = fileUploadMap.get(id);
+        try {
+            upload.start();
+        } catch (IOException e) {
+            System.out.println("Error starting transfer: " + e);
+        }
+
+        var startTransfer = new StartTransfer(id);
+        send(startTransfer.encode());
+    }
+
+    public void transferLoop() {
+        long id = 0;
+        boolean validId = false;
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                if (!validId) {
+                    id = fileUploadQueue.take();
+                    startTransfer(id);
+                }
+
+                var upload = fileUploadMap.get(id);
+
+                Optional<byte[]> chunk;
+                while ((chunk = upload.next()).isPresent()) {
+                    var chunkMessage = new ChunkMessage(id, upload.getOffset(), upload.getChunkSize(), chunk.get());
+                    send(chunkMessage.encode());
+                }
+
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (IOException e) {
+                // TODO: Fail upload and send cancel message
+            }
+
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------
+    // Message handling
+
     public void onMessage(ByteBuffer buffer) {
 
         var type = buffer.get();
@@ -38,7 +102,8 @@ public class FileService {
         try {
             switch (messageType) {
                 case TEST -> {
-                    var typed_data = TestMessage.decode(buffer);
+                    var testMessage = TestMessage.decode(buffer);
+                    System.out.println(Arrays.toString(testMessage.getData()));
                 }
                 case UPLOAD_REQUEST -> {
                     var uploadRequest = UploadRequest.decode(buffer);
@@ -52,7 +117,7 @@ public class FileService {
                     var acceptUpload = AcceptUpload.decode(buffer);
                     handleAcceptUpload(acceptUpload);
                 }
-                case PAYLOAD -> {
+                case CHUNK -> {
                 }
                 case RECEIVED -> {
                 }
@@ -68,7 +133,7 @@ public class FileService {
         }
     }
 
-    public void handleUploadRequest(UploadRequest uploadRequest) {
+    private void handleUploadRequest(UploadRequest uploadRequest) {
 
         var path = FileTransferPath.verifyLegalAndNormalizePathToRoot(uploadRequest.fileDestination);
         if (path.isEmpty()) {
@@ -83,8 +148,7 @@ public class FileService {
         send(acceptMessage.encode());
     }
 
-    public void handleDownloadRequest(DownloadRequest downloadRequest) {
-
+    private void handleDownloadRequest(DownloadRequest downloadRequest) {
 
         var path =  FileTransferPath.verifyLegalAndNormalizePathToRoot(downloadRequest.fileSource);
         if (path.isEmpty()) {
@@ -104,13 +168,14 @@ public class FileService {
         send(uploadRequest.encode());
     }
 
-    public void handleAcceptUpload(AcceptUpload acceptUpload) {
+    private void handleAcceptUpload(AcceptUpload acceptUpload) {
         if (!fileUploadMap.containsKey(acceptUpload.id)) {
             // TODO: WTF??? Why are you accepting unexistent things
             return;
         }
 
         fileUploadMap.get(acceptUpload.id).approve();
+        fileUploadQueue.add(acceptUpload.id);
     }
 
     public Map<Long, FileUpload> getUploads() {
