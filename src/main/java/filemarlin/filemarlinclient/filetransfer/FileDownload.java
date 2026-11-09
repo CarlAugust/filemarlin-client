@@ -1,5 +1,6 @@
 package filemarlin.filemarlinclient.filetransfer;
 
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
@@ -20,6 +21,10 @@ public class FileDownload {
         transferState = TransferState.QUEUED;
     }
 
+    public void start() throws IOException {
+        writer = new RandomAccessFile(filePath.toFile(), "rw");
+        transferState = TransferState.TRANSFERRING;
+    }
 
 
 }

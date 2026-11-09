@@ -117,6 +117,10 @@ public class FileService {
                     var acceptUpload = AcceptUpload.decode(buffer);
                     handleAcceptUpload(acceptUpload);
                 }
+                case START_TRANSFER -> {
+                    var id = StartTransfer.decode(buffer).id;
+
+                }
                 case CHUNK -> {
                 }
                 case RECEIVED -> {
@@ -184,5 +188,19 @@ public class FileService {
 
     public Map<Long, FileDownload> getDownloads() {
         return Collections.unmodifiableMap(fileDownloadMap);
+    }
+
+    private void handleStartTransfer(long id) {
+        if (!fileDownloadMap.containsKey(id)) {
+           // TODO: BRO YOU NEVER REQUESTED THIS
+           return;
+        }
+
+        try {
+            fileDownloadMap.get(id).start();
+        } catch (IOException e) {
+            var cancel = new CancelMessage(id);
+            send(cancel.encode());
+        }
     }
 }
