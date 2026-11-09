@@ -26,5 +26,10 @@ public class FileDownload {
         transferState = TransferState.TRANSFERRING;
     }
 
+    public void write(long offset, byte[] data) throws IOException {
+        writer.seek(offset);
+        writer.write(data);
+    }
+
 
 }

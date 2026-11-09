@@ -70,6 +70,7 @@ public class FileService {
             try {
                 if (!validId) {
                     id = fileUploadQueue.take();
+                    validId = true;
                     startTransfer(id);
                 }
 
@@ -81,7 +82,9 @@ public class FileService {
                     send(chunkMessage.encode());
                 }
 
-
+                id = 0;
+                validId = false;
+                
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (IOException e) {
@@ -160,7 +163,7 @@ public class FileService {
             return;
         }
 
-        if (!fileUploadMap.containsKey(downloadRequest.id)) {
+        if (fileUploadMap.containsKey(downloadRequest.id)) {
             // TODO: Send non unique id error
             return;
         }
@@ -196,11 +199,30 @@ public class FileService {
            return;
         }
 
+        var download = fileDownloadMap.get(id);
         try {
-            fileDownloadMap.get(id).start();
+            download.start();
         } catch (IOException e) {
             var cancel = new CancelMessage(id);
             send(cancel.encode());
+        }
+    }
+
+    private void handleIncomingChunk(ChunkMessage chunkMessage) {
+        if (!fileDownloadMap.containsKey(chunkMessage.id)) {
+            // TODO: BRO WTHAT ARE YOU EVEN TRANSFERING TOO????
+            return;
+        }
+
+        var download = fileDownloadMap.get(chunkMessage.id);
+        try {
+            download.write(chunkMessage.offset, chunkMessage.data);
+
+            var receivedChunk = new ReceivedChunk(chunkMessage.id, chunkMessage.offset, chunkMessage.size);
+            send(receivedChunk.encode());
+        } catch (IOException e) {
+            // TODO: WHAT SHOULD HAPPEN HERE
+            return;
         }
     }
 }
