@@ -31,5 +31,9 @@ public class FileDownload {
         writer.write(data);
     }
 
+    public void complete() {
+        transferState = TransferState.VERIFYING;
+    }
+
 
 }

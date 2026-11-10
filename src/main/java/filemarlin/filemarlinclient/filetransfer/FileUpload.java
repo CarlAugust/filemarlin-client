@@ -45,6 +45,10 @@ public class FileUpload {
         return Optional.of(chunk);
     }
 
+    public void complete() {
+        transferState = TransferState.VERIFYING;
+    }
+
     public synchronized TransferState getTransferState() {
         return transferState;
     }

@@ -82,9 +82,15 @@ public class FileService {
                     send(chunkMessage.encode());
                 }
 
+                // TODO: FOR NOW ASSUME THAT EVERYTHING JUST WORKS
+                var completed = new CompleteMessage(id);
+                send(completed.encode());
+
+                upload.complete();
+
                 id = 0;
                 validId = false;
-                
+
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (IOException e) {
@@ -217,12 +223,22 @@ public class FileService {
         var download = fileDownloadMap.get(chunkMessage.id);
         try {
             download.write(chunkMessage.offset, chunkMessage.data);
-
             var receivedChunk = new ReceivedChunk(chunkMessage.id, chunkMessage.offset, chunkMessage.size);
             send(receivedChunk.encode());
+
         } catch (IOException e) {
             // TODO: WHAT SHOULD HAPPEN HERE
             return;
         }
+    }
+
+    private void handleComplete(CompleteMessage completed) {
+        if (!fileDownloadMap.containsKey(completed.id)) {
+            // TODO: BLUD THIS DOESTN EXIST
+            return;
+        }
+
+        var download = fileDownloadMap.get(completed.id);
+        download.complete();
     }
 }
