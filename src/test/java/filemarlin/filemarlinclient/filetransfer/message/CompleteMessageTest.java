@@ -8,12 +8,13 @@ public class CompleteMessageTest {
 
     @Test
     public void EncodeDecodeConsistency() throws Exception {
-        var expected = new CompleteMessage(22);
+        var expected = new CompleteMessage(22, 4243);
         var encoded = expected.encode();
 
         encoded.get();
         var actual = CompleteMessage.decode(encoded);
 
         assertEquals(expected.id, actual.id);
+        assertEquals(expected.checksum, actual.checksum);
     }
 }

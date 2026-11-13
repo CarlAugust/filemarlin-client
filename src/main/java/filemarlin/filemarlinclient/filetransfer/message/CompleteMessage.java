@@ -4,9 +4,11 @@ import java.nio.ByteBuffer;
 
 public class CompleteMessage implements FileTransferMessageInterface {
     public long id;
+    public long checksum;
 
-    public CompleteMessage(long id) {
+    public CompleteMessage(long id, long checksum) {
         this.id = id;
+        this.checksum = checksum;
     }
 
     @Override
@@ -17,11 +19,12 @@ public class CompleteMessage implements FileTransferMessageInterface {
     @Override
     public ByteBuffer encode() {
         var buffer = ByteBuffer.allocate(
-                1 + Long.BYTES
+                1 + Long.BYTES + Long.BYTES
         );
 
         buffer.put(getType().getValue());
         buffer.putLong(id);
+        buffer.putLong(checksum);
         buffer.flip();
 
         return buffer;
@@ -29,7 +32,8 @@ public class CompleteMessage implements FileTransferMessageInterface {
 
     public static CompleteMessage decode(ByteBuffer buffer) throws Exception {
         var id = buffer.getLong();
+        var checksum = buffer.getLong();
 
-        return new CompleteMessage(id);
+        return new CompleteMessage(id, checksum);
     }
 }

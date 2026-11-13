@@ -3,6 +3,7 @@ package filemarlin.filemarlinclient.filetransfer;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
+import java.util.zip.CRC32;
 
 public class FileDownload {
 
@@ -22,7 +23,7 @@ public class FileDownload {
     }
 
     public void start() throws IOException {
-        writer = new RandomAccessFile(filePath.toFile(), "rw");
+        writer = new RandomAccessFile(filePath.toString() + ".tmp", "rw");
         transferState = TransferState.TRANSFERRING;
     }
 
@@ -35,5 +36,7 @@ public class FileDownload {
         transferState = TransferState.VERIFYING;
     }
 
-
+    public RandomAccessFile getWriter() {
+        return writer;
+    }
 }

@@ -4,15 +4,9 @@ import dev.onvoid.webrtc.RTCDataChannel;
 import dev.onvoid.webrtc.RTCDataChannelBuffer;
 import dev.onvoid.webrtc.RTCDataChannelObserver;
 import dev.onvoid.webrtc.RTCDataChannelState;
-import filemarlin.filemarlinclient.filetransfer.FileTransfer;
-import filemarlin.filemarlinclient.filetransfer.FileTransferMessageDecoder;
-import filemarlin.filemarlinclient.filetransfer.FileTransferPath;
-import filemarlin.filemarlinclient.filetransfer.message.*;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class WebRTCDataChannelObserver implements RTCDataChannelObserver {

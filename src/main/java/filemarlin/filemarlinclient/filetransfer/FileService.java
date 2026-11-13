@@ -83,10 +83,12 @@ public class FileService {
                 }
 
                 // TODO: FOR NOW ASSUME THAT EVERYTHING JUST WORKS
-                var completed = new CompleteMessage(id);
+                var checkSum = FileCheckSum.generateCheckSum(upload.getWriter());
+                var completed = new CompleteMessage(id, checkSum);
+                 
                 send(completed.encode());
-
                 upload.complete();
+
 
                 id = 0;
                 validId = false;
@@ -128,13 +130,18 @@ public class FileService {
                 }
                 case START_TRANSFER -> {
                     var id = StartTransfer.decode(buffer).id;
-
+                    handleStartTransfer(id);
                 }
                 case CHUNK -> {
+                   var chunkMessage = ChunkMessage.decode(buffer);
+                   handleIncomingChunk(chunkMessage);
                 }
                 case RECEIVED -> {
+
                 }
                 case COMPLETE_TRANSFER -> {
+                    var completed = CompleteMessage.decode(buffer);
+                    handleComplete(completed);
                 }
                 case CANCEL_TRANSFER -> {
                 }
