@@ -3,7 +3,8 @@ package filemarlin.filemarlinclient.filetransfer.message;
 public enum ErrorCodes {
     DECODE_ERROR_LOCAL(0),
     IO_ERROR(1),
-    PERMISSION_DENIED(2);
+    PERMISSION_DENIED(2),
+    CHECKSUM_DO_NOT_MATCH(3);
 
     private final byte value;
 

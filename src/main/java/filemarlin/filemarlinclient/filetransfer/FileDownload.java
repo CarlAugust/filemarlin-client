@@ -3,7 +3,6 @@ package filemarlin.filemarlinclient.filetransfer;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
-import java.util.zip.CRC32;
 
 public class FileDownload {
 

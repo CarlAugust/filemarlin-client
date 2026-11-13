@@ -87,8 +87,6 @@ public class FileService {
                 var completed = new CompleteMessage(id, checkSum);
                  
                 send(completed.encode());
-                upload.complete();
-
 
                 id = 0;
                 validId = false;
@@ -142,6 +140,10 @@ public class FileService {
                 case COMPLETE_TRANSFER -> {
                     var completed = CompleteMessage.decode(buffer);
                     handleComplete(completed);
+                }
+                case VERIFY_TRANSFER -> {
+                    var verify = VerifyTransfer.decode(buffer);
+                    handleVerification(verify.id);
                 }
                 case CANCEL_TRANSFER -> {
                 }
@@ -256,8 +258,8 @@ public class FileService {
         }
 
         if (!checkSumIsEqual) {
-            var cancel = new CancelMessage(completed.id);
-            send(cancel.encode());
+            var error = new ErrorMessage(completed.id, ErrorCodes.CHECKSUM_DO_NOT_MATCH, "There has been an error during transit, checksums do not match");
+            send(error.encode());
             return;
         }
 
@@ -265,5 +267,15 @@ public class FileService {
         send(verify.encode());
 
         download.complete();
+    }
+
+    private void handleVerification(long id) {
+        if (!fileUploadMap.containsKey(id)) {
+            // TODO: NAH WHAT ARE YOU DOINe
+            return;
+        }
+
+        var upload = fileUploadMap.get(id);
+        upload.complete();
     }
 }
