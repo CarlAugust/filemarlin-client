@@ -14,16 +14,19 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
 
     private final RTCDataChannel dataChannel;
     private final CompletableFuture<Void> hasOpened;
-    private Consumer<ByteBuffer> messageListener;
+    private final Consumer<ByteBuffer> messageListener;
+    private final Object bufferLock;
 
 
     public WebRTCDataChannelObserver(RTCDataChannel dataChannel,
                                      CompletableFuture<Void> hasOpened,
-                                     Consumer<ByteBuffer> messageListener
+                                     Consumer<ByteBuffer> messageListener,
+                                     Object bufferLock
     ) {
         this.dataChannel = dataChannel;
         this.hasOpened = hasOpened;
         this.messageListener = messageListener;
+        this.bufferLock = bufferLock;
     }
 
     @Override
@@ -31,6 +34,10 @@ public class WebRTCDataChannelObserver implements RTCDataChannelObserver {
         long currentAmount = dataChannel.getBufferedAmount();
         System.out.println("Buffered amount decreased by " + sentDataSize +
                 " to " + currentAmount + " bytes");
+
+        synchronized (bufferLock) {
+            bufferLock.notifyAll();
+        }
     }
 
     @Override

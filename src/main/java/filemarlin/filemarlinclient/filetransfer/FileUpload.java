@@ -15,7 +15,7 @@ public class FileUpload {
     private RandomAccessFile writer = null;
     private long totalBytes = 0;
     private long offset = 0;
-    private final int chunkSize = 32000;
+    private final int chunkSize = 16384;
 
     public FileUpload(long id, Path filePath) {
         this.id = id;

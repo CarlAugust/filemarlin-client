@@ -19,6 +19,7 @@ public class WebRTCPeerConnection {
 
     private RTCPeerConnection peerConnection = null;
     private RTCDataChannel dataChannel = null;
+    private final Object bufferLock = new Object();
 
     private final WebRTCContext context;
     private final Signaller signaller;
@@ -69,7 +70,7 @@ public class WebRTCPeerConnection {
                 log("Set remote dataChannel: " + channel.getLabel());
                 dataChannel = channel;
 
-                var observer = new WebRTCDataChannelObserver(dataChannel, connectionEstablished, fileService::onMessage);
+                var observer = new WebRTCDataChannelObserver(dataChannel, connectionEstablished, fileService::onMessage, bufferLock);
                 dataChannel.registerObserver(observer);
                 fileService.setMessageSender(WebRTCPeerConnection.this::send);
 
@@ -82,7 +83,7 @@ public class WebRTCPeerConnection {
         log("Creating offer.");
         dataChannel = peerConnection.createDataChannel("File-transfer", new RTCDataChannelInit());
 
-        var observer = new WebRTCDataChannelObserver(dataChannel, connectionEstablished, fileService::onMessage);
+        var observer = new WebRTCDataChannelObserver(dataChannel, connectionEstablished, fileService::onMessage, bufferLock);
         dataChannel.registerObserver(observer);
         fileService.setMessageSender(this::send);
 
@@ -238,7 +239,15 @@ public class WebRTCPeerConnection {
     }
 
     public void send(ByteBuffer buffer) throws Exception {
-        if (dataChannel != null) {
+        if (dataChannel == null) {
+            return;
+        }
+
+        synchronized (bufferLock) {
+            while (dataChannel.getBufferedAmount() + buffer.limit() < 16384 * 1000) {
+                bufferLock.wait();
+            }
+
             dataChannel.send(new RTCDataChannelBuffer(buffer, true));
         }
     }
