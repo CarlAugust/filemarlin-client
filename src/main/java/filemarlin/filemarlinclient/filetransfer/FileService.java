@@ -246,6 +246,24 @@ public class FileService {
         }
 
         var download = fileDownloadMap.get(completed.id);
+        var checkSumIsEqual = false;
+        try {
+            var checksum = FileCheckSum.generateCheckSum(download.getWriter());
+            checkSumIsEqual = checksum == completed.checksum;
+        } catch (IOException e) {
+            // TODO: Bla bla bal handle this
+            return;
+        }
+
+        if (!checkSumIsEqual) {
+            var cancel = new CancelMessage(completed.id);
+            send(cancel.encode());
+            return;
+        }
+
+        var verify = new VerifyTransfer(completed.id);
+        send(verify.encode());
+
         download.complete();
     }
 }

@@ -10,10 +10,11 @@ public enum MessageType {
     START_TRANSFER(4),
     COMPLETE_TRANSFER(5),
     CANCEL_TRANSFER(6),
+    VERIFY_TRANSFER(9),
 
     CHUNK(7),
     RECEIVED(8),
-    
+
     ERROR(9);
 
     private final byte value;
